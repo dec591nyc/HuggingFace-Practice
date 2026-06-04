@@ -134,8 +134,8 @@ def call_hugging_face(api_key: str, payload: Dict, model_id: str) -> Tuple[Optio
     return None, "\n\n".join(errors)
 
 
-def call_google_imagen(api_key: str, prompt: str, aspect_ratio: str, num_images: int) -> Tuple[Optional[List[Image.Image]], str]:
-    # Aspect ratio mapping for Google Imagen 3 API
+def call_google_imagen(api_key: str, model_id: str, prompt: str, aspect_ratio: str, num_images: int) -> Tuple[Optional[List[Image.Image]], str]:
+    # Aspect ratio mapping for Google Imagen API
     ratio_map = {
         "1:1 Square": "1:1",
         "16:9 Landscape": "16:9",
@@ -145,7 +145,8 @@ def call_google_imagen(api_key: str, prompt: str, aspect_ratio: str, num_images:
     }
     ratio = ratio_map.get(aspect_ratio, "1:1")
     
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key={api_key.strip()}"
+    # Use model_id dynamically in the URL
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:predict?key={api_key.strip()}"
     headers = {
         "Content-Type": "application/json"
     }
@@ -422,14 +423,16 @@ def main() -> None:
     """, unsafe_allow_html=True)
 
     st.markdown("<h1>Universal AI Image Generator</h1>", unsafe_allow_html=True)
-    st.markdown("<p class='title-caption'>A premium Streamlit Web App utilizing Google Imagen 3 and FLUX.1 Schnell.</p>", unsafe_allow_html=True)
+    st.markdown("<p class='title-caption'>A premium Streamlit Web App utilizing Google Nano Banana and FLUX.1 Schnell.</p>", unsafe_allow_html=True)
 
     with st.sidebar:
         st.header("⚡ Project Dashboard")
         
         POPULAR_MODELS = {
             "FLUX.1 Schnell (via Hugging Face)": "black-forest-labs/FLUX.1-schnell",
-            "Google Imagen 3 (via Gemini API)": "google/imagen-3.0-generate-002",
+            "Google Nano Banana (Free Imagen 3)": "imagen-3.0-generate-002",
+            "Google Nano Banana 2 (Paid Flash Image)": "gemini-3.1-flash-image",
+            "Google Nano Banana Pro (Paid Pro Image)": "gemini-3-pro-image",
             "Custom HF Model (Enter below)": "custom"
         }
         
@@ -437,7 +440,7 @@ def main() -> None:
             "Select Model", 
             list(POPULAR_MODELS.keys()), 
             index=0,
-            help="Select a model. FLUX uses Hugging Face serverless tier, while Google Imagen uses Google AI Studio."
+            help="Select a model. FLUX uses Hugging Face serverless tier, while Google Nano Banana uses Google AI Studio."
         )
         
         if POPULAR_MODELS[model_selection] == "custom":
@@ -454,7 +457,11 @@ def main() -> None:
         st.markdown(f"**Live Demo:** [Streamlit.app]({demo_link})")
 
     # Access API Token based on selected model
-    is_gemini_model = (model_id == "google/imagen-3.0-generate-002")
+    is_gemini_model = model_id in [
+        "imagen-3.0-generate-002",
+        "gemini-3.1-flash-image",
+        "gemini-3-pro-image"
+    ]
     
     if is_gemini_model:
         api_key = get_secret_value("GEMINI_API_KEY", None)
