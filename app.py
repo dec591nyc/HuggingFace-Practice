@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFont
 load_dotenv()
 
 MODEL_ID = "black-forest-labs/FLUX.1-schnell"
-DEFAULT_GITHUB_LINK = "https://github.com/yourname/hw3-cosmos-text2image"
+DEFAULT_GITHUB_LINK = "https://github.com/dec591nyc/HuggingFace_Practice"
 DEFAULT_DEMO_LINK = "https://your-app-name.streamlit.app"
 
 ASPECT_RATIOS: Dict[str, Tuple[int, int]] = {
