@@ -134,55 +134,6 @@ def call_hugging_face(api_key: str, payload: Dict, model_id: str) -> Tuple[Optio
     return None, "\n\n".join(errors)
 
 
-def call_google_imagen(api_key: str, model_id: str, prompt: str, aspect_ratio: str, num_images: int) -> Tuple[Optional[List[Image.Image]], str]:
-    # Aspect ratio mapping for Google Imagen API
-    ratio_map = {
-        "1:1 Square": "1:1",
-        "16:9 Landscape": "16:9",
-        "9:16 Portrait": "9:16",
-        "4:3 Classic": "4:3",
-        "3:4 Mobile Poster": "3:4"
-    }
-    ratio = ratio_map.get(aspect_ratio, "1:1")
-    
-    # Use model_id dynamically in the URL
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:predict?key={api_key.strip()}"
-    headers = {
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "instances": [
-            {
-                "prompt": prompt
-            }
-        ],
-        "parameters": {
-            "sampleCount": min(num_images, 4),
-            "aspectRatio": ratio,
-            "outputMimeType": "image/jpeg"
-        }
-    }
-    
-    try:
-        response = requests.post(url, headers=headers, json=payload, timeout=120)
-        if not response.ok:
-            return None, f"Google API Error {response.status_code}: {response.text}"
-        
-        data = response.json()
-        predictions = data.get("predictions", [])
-        if not predictions:
-            return None, f"No predictions returned from Google. Response: {json.dumps(data)}"
-            
-        images = []
-        for pred in predictions:
-            img_bytes = base64.b64decode(pred.get("bytesBase64Encoded", ""))
-            image = Image.open(io.BytesIO(img_bytes)).convert("RGB")
-            images.append(image)
-            
-        return images, ""
-    except Exception as e:
-        return None, f"Failed to call Google Imagen API: {e}"
-
 
 def make_mock_image(prompt: str, width: int, height: int, seed: int, style: str) -> Image.Image:
     # A beautifully styled mock image generator using Pillow for local testing and demo mode.
@@ -423,16 +374,13 @@ def main() -> None:
     """, unsafe_allow_html=True)
 
     st.markdown("<h1>Universal AI Image Generator</h1>", unsafe_allow_html=True)
-    st.markdown("<p class='title-caption'>A premium Streamlit Web App utilizing Google Nano Banana and FLUX.1 Schnell.</p>", unsafe_allow_html=True)
+    st.markdown("<p class='title-caption'>A premium Streamlit Web App utilizing FLUX.1 Schnell.</p>", unsafe_allow_html=True)
 
     with st.sidebar:
         st.header("⚡ Project Dashboard")
         
         POPULAR_MODELS = {
             "FLUX.1 Schnell (via Hugging Face)": "black-forest-labs/FLUX.1-schnell",
-            "Google Nano Banana (Free Imagen 3)": "imagen-3.0-generate-002",
-            "Google Nano Banana 2 (Paid Flash Image)": "gemini-3.1-flash-image",
-            "Google Nano Banana Pro (Paid Pro Image)": "gemini-3-pro-image",
             "Custom HF Model (Enter below)": "custom"
         }
         
@@ -440,7 +388,7 @@ def main() -> None:
             "Select Model", 
             list(POPULAR_MODELS.keys()), 
             index=0,
-            help="Select a model. FLUX uses Hugging Face serverless tier, while Google Nano Banana uses Google AI Studio."
+            help="Select a model. FLUX uses Hugging Face serverless tier."
         )
         
         if POPULAR_MODELS[model_selection] == "custom":
@@ -456,28 +404,12 @@ def main() -> None:
         st.markdown(f"**GitHub:** [{github_link.split('/')[-1]}]({github_link})")
         st.markdown(f"**Live Demo:** [Streamlit.app]({demo_link})")
 
-    # Access API Token based on selected model
-    is_gemini_model = model_id in [
-        "imagen-3.0-generate-002",
-        "gemini-3.1-flash-image",
-        "gemini-3-pro-image"
-    ]
-    
-    if is_gemini_model:
-        api_key = get_secret_value("GEMINI_API_KEY", None)
-        if not api_key:
-            api_key = get_secret_value("GOOGLE_API_KEY", None)
-            
-        if not api_key:
-            api_key = st.text_input("Enter your Google Gemini API Key (GEMINI_API_KEY)", type="password")
-        else:
-            st.success("Google Gemini API key verified via environment/secrets.")
+    # Access API Token for Hugging Face
+    api_key = get_secret_value("HF_TOKEN", None)
+    if not api_key:
+        api_key = st.text_input("Enter your Hugging Face API Token (HF_TOKEN)", type="password")
     else:
-        api_key = get_secret_value("HF_TOKEN", None)
-        if not api_key:
-            api_key = st.text_input("Enter your Hugging Face API Token (HF_TOKEN)", type="password")
-        else:
-            st.success("Hugging Face API token verified via environment/secrets.")
+        st.success("Hugging Face API token verified via environment/secrets.")
 
     # Initialize session state for Cosmos 3 prompt properties
     if "prev_prompt" not in st.session_state:
@@ -605,48 +537,33 @@ def main() -> None:
         st.info(f"Generating {number_of_images} image(s)...")
         images: List[Image.Image] = []
 
-        if is_gemini_model and not demo_mode:
-            with st.spinner("Requesting image(s) from Google Imagen API..."):
-                images_result, error = call_google_imagen(
-                    api_key=str(api_key),
-                    model_id=model_id,
-                    prompt=final_prompt,
-                    aspect_ratio=aspect_ratio,
-                    num_images=number_of_images
-                )
-            if images_result is None:
-                st.error("Google Imagen generation failed.")
-                st.code(error, language="text")
-            else:
-                images = images_result
-        else:
-            for index in range(number_of_images):
-                current_seed = int(seed) + index
-                
-                payload = build_payload(
-                    prompt=final_payload_prompt,
-                    negative_prompt=negative_prompt,
-                    width=width,
-                    height=height,
-                    seed=current_seed,
-                    guidance_scale=float(guidance_scale),
-                    steps=int(steps),
-                )
+        for index in range(number_of_images):
+            current_seed = int(seed) + index
+            
+            payload = build_payload(
+                prompt=final_payload_prompt,
+                negative_prompt=negative_prompt,
+                width=width,
+                height=height,
+                seed=current_seed,
+                guidance_scale=float(guidance_scale),
+                steps=int(steps),
+            )
 
-                if demo_mode:
-                    image = make_mock_image(final_prompt, width, height, current_seed, style)
-                    images.append(image)
-                    continue
-
-                with st.spinner(f"Requesting Image {index + 1} from Hugging Face Inference..."):
-                    image, error = call_hugging_face(str(api_key), payload, model_id)
-
-                if image is None:
-                    st.error("Image generation failed.")
-                    st.code(error, language="text")
-                    break
-
+            if demo_mode:
+                image = make_mock_image(final_prompt, width, height, current_seed, style)
                 images.append(image)
+                continue
+
+            with st.spinner(f"Requesting Image {index + 1} from Hugging Face Inference..."):
+                image, error = call_hugging_face(str(api_key), payload, model_id)
+
+            if image is None:
+                st.error("Image generation failed.")
+                st.code(error, language="text")
+                break
+
+            images.append(image)
 
         if images:
             st.success("Generation complete!")
