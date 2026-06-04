@@ -1,3 +1,4 @@
+import base64
 import io
 import json
 import os
@@ -13,7 +14,7 @@ from PIL import Image, ImageDraw, ImageFont
 # Load environment variables from .env file if it exists
 load_dotenv()
 
-MODEL_ID = "nvidia/Cosmos3-Super-Text2Image"
+MODEL_ID = "black-forest-labs/FLUX.1-schnell"
 DEFAULT_GITHUB_LINK = "https://github.com/yourname/hw3-cosmos-text2image"
 DEFAULT_DEMO_LINK = "https://your-app-name.streamlit.app"
 
@@ -133,6 +134,55 @@ def call_hugging_face(api_key: str, payload: Dict, model_id: str) -> Tuple[Optio
     return None, "\n\n".join(errors)
 
 
+def call_google_imagen(api_key: str, prompt: str, aspect_ratio: str, num_images: int) -> Tuple[Optional[List[Image.Image]], str]:
+    # Aspect ratio mapping for Google Imagen 3 API
+    ratio_map = {
+        "1:1 Square": "1:1",
+        "16:9 Landscape": "16:9",
+        "9:16 Portrait": "9:16",
+        "4:3 Classic": "4:3",
+        "3:4 Mobile Poster": "3:4"
+    }
+    ratio = ratio_map.get(aspect_ratio, "1:1")
+    
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key={api_key.strip()}"
+    headers = {
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "instances": [
+            {
+                "prompt": prompt
+            }
+        ],
+        "parameters": {
+            "sampleCount": min(num_images, 4),
+            "aspectRatio": ratio,
+            "outputMimeType": "image/jpeg"
+        }
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=payload, timeout=120)
+        if not response.ok:
+            return None, f"Google API Error {response.status_code}: {response.text}"
+        
+        data = response.json()
+        predictions = data.get("predictions", [])
+        if not predictions:
+            return None, f"No predictions returned from Google. Response: {json.dumps(data)}"
+            
+        images = []
+        for pred in predictions:
+            img_bytes = base64.b64decode(pred.get("bytesBase64Encoded", ""))
+            image = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+            images.append(image)
+            
+        return images, ""
+    except Exception as e:
+        return None, f"Failed to call Google Imagen API: {e}"
+
+
 def make_mock_image(prompt: str, width: int, height: int, seed: int, style: str) -> Image.Image:
     # A beautifully styled mock image generator using Pillow for local testing and demo mode.
     rng = random.Random(seed)
@@ -204,7 +254,7 @@ def make_mock_image(prompt: str, width: int, height: int, seed: int, style: str)
     draw.rectangle([20, 20, width - 20, height - 20], outline=border_color, width=4)
 
     # Draw title
-    title_text = f"Cosmos 3 Demo Image [{style}]"
+    title_text = f"Demo Image [{style}]"
     
     # Text overlay
     margin = max(40, width // 20)
@@ -235,7 +285,7 @@ def make_mock_image(prompt: str, width: int, height: int, seed: int, style: str)
 
 def main() -> None:
     st.set_page_config(
-        page_title="NVIDIA Cosmos3-Super Image Generator",
+        page_title="Universal AI Image Generator",
         page_icon="🎨",
         layout="wide",
     )
@@ -371,27 +421,27 @@ def main() -> None:
         </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("<h1>NVIDIA Cosmos 3 Image Generator</h1>", unsafe_allow_html=True)
-    st.markdown("<p class='title-caption'>A premium Streamlit Web App utilizing NVIDIA Cosmos3-Super-Text2Image with JSON-upsampled prompts.</p>", unsafe_allow_html=True)
+    st.markdown("<h1>Universal AI Image Generator</h1>", unsafe_allow_html=True)
+    st.markdown("<p class='title-caption'>A premium Streamlit Web App utilizing Google Imagen 3 and FLUX.1 Schnell.</p>", unsafe_allow_html=True)
 
     with st.sidebar:
         st.header("⚡ Project Dashboard")
         
         POPULAR_MODELS = {
-            "NVIDIA Cosmos 3 (Text-to-Image)": "nvidia/Cosmos3-Super-Text2Image",
-            "FLUX.1 Schnell (Fast & Free - Verified Active)": "black-forest-labs/FLUX.1-schnell",
-            "Custom Model (Enter below)": "custom"
+            "FLUX.1 Schnell (via Hugging Face)": "black-forest-labs/FLUX.1-schnell",
+            "Google Imagen 3 (via Gemini API)": "google/imagen-3.0-generate-002",
+            "Custom HF Model (Enter below)": "custom"
         }
         
         model_selection = st.selectbox(
             "Select Model", 
             list(POPULAR_MODELS.keys()), 
             index=0,
-            help="Select a model. Cosmos 3 is recommended for the homework, while FLUX is verified active for testing API connectivity."
+            help="Select a model. FLUX uses Hugging Face serverless tier, while Google Imagen uses Google AI Studio."
         )
         
         if POPULAR_MODELS[model_selection] == "custom":
-            model_id = st.text_input("Custom Model ID", value="nvidia/Cosmos3-Super-Text2Image")
+            model_id = st.text_input("Custom Model ID", value="black-forest-labs/FLUX.1-schnell")
         else:
             model_id = POPULAR_MODELS[model_selection]
             
@@ -403,12 +453,24 @@ def main() -> None:
         st.markdown(f"**GitHub:** [{github_link.split('/')[-1]}]({github_link})")
         st.markdown(f"**Live Demo:** [Streamlit.app]({demo_link})")
 
-    # Access API Token from secrets or prompt the user
-    api_key = get_secret_value("HF_TOKEN", None)
-    if not api_key:
-        api_key = st.text_input("Enter your Hugging Face API Token (HF_TOKEN)", type="password")
+    # Access API Token based on selected model
+    is_gemini_model = (model_id == "google/imagen-3.0-generate-002")
+    
+    if is_gemini_model:
+        api_key = get_secret_value("GEMINI_API_KEY", None)
+        if not api_key:
+            api_key = get_secret_value("GOOGLE_API_KEY", None)
+            
+        if not api_key:
+            api_key = st.text_input("Enter your Google Gemini API Key (GEMINI_API_KEY)", type="password")
+        else:
+            st.success("Google Gemini API key verified via environment/secrets.")
     else:
-        st.success("Hugging Face API token verified via environment/secrets.")
+        api_key = get_secret_value("HF_TOKEN", None)
+        if not api_key:
+            api_key = st.text_input("Enter your Hugging Face API Token (HF_TOKEN)", type="password")
+        else:
+            st.success("Hugging Face API token verified via environment/secrets.")
 
     # Initialize session state for Cosmos 3 prompt properties
     if "prev_prompt" not in st.session_state:
@@ -463,17 +525,18 @@ def main() -> None:
                     st.session_state.subjects = prompt
                     st.session_state.background = ""
 
-        is_cosmos_model = (model_id == "nvidia/Cosmos3-Super-Text2Image")
+        # Optional JSON-Upsampling Prompt Setup for Custom / Cosmos models
+        st.markdown("---")
         use_json_prompt = st.checkbox(
             "Use NVIDIA Cosmos 3 JSON-Upsampled Prompt Format", 
-            value=is_cosmos_model, 
-            help="Highly recommended by NVIDIA. Structures prompt metadata into JSON fields to drastically improve output layout and physics."
+            value=False, 
+            help="Structures prompt metadata into JSON fields. Only toggle this if your custom model requires the Cosmos 3 JSON schema."
         )
         
         if use_json_prompt:
             with st.expander("🛠️ Cosmos 3 JSON-Upsampling Fields", expanded=True):
                 st.markdown(
-                    "<small style='color:rgba(255,255,255,0.6);'>Edit these fields to customize specific scene details passed to the model's structural inputs.</small>", 
+                    "<small style='color:rgba(30,41,59,0.6);'>Edit these fields to customize specific scene details passed to the model's structural inputs.</small>", 
                     unsafe_allow_html=True
                 )
                 subjects_input = st.text_input("Subjects (comma-separated)", value=st.session_state.subjects)
@@ -507,16 +570,11 @@ def main() -> None:
         guidance_scale = st.slider("Guidance Scale (CFG)", min_value=1.0, max_value=15.0, value=7.0, step=0.5)
         steps = st.slider("Inference Steps", min_value=10, max_value=60, value=30, step=5)
         
-        is_cosmos = (model_id == "nvidia/Cosmos3-Super-Text2Image")
-        if is_cosmos:
-            st.info("ℹ️ NVIDIA Cosmos 3 will run in local Demo/Mock Mode (since 64B models are not supported on Hugging Face's free serverless APIs).")
-            demo_mode = True
-        else:
-            demo_mode = st.checkbox(
-                "Demo Mode / Mock Mode",
-                value=False,
-                help="Enable to simulate image generation locally without calling Hugging Face API.",
-            )
+        demo_mode = st.checkbox(
+            "Demo Mode / Mock Mode",
+            value=False,
+            help="Enable to simulate image generation locally without calling the API.",
+        )
         
         st.markdown("### 🔍 Final Payload Preview")
         if use_json_prompt:
@@ -534,43 +592,53 @@ def main() -> None:
             return
 
         if not api_key and not demo_mode:
-            st.error("Please enter a Hugging Face API Token, or enable Demo Mode.")
+            st.error("Please enter the API key, or enable Demo Mode.")
             return
 
-        st.info(f"Generating {number_of_images} image(s) at {width}x{height}...")
+        st.info(f"Generating {number_of_images} image(s)...")
         images: List[Image.Image] = []
 
-        for index in range(number_of_images):
-            current_seed = int(seed) + index
-            
-            payload = build_payload(
-                prompt=final_payload_prompt,
-                negative_prompt=negative_prompt,
-                width=width,
-                height=height,
-                seed=current_seed,
-                guidance_scale=float(guidance_scale),
-                steps=int(steps),
-            )
-
-            if demo_mode:
-                image = make_mock_image(final_prompt, width, height, current_seed, style)
-                images.append(image)
-                continue
-
-            with st.spinner(f"Requesting Image {index + 1} from Hugging Face Inference..."):
-                image, error = call_hugging_face(str(api_key), payload, model_id)
-
-            if image is None:
-                st.error("Image generation failed.")
-                st.code(error, language="text")
-                st.warning(
-                    "Note: Cosmos 3 is a 64B parameter model. If serverless APIs are overloaded, "
-                    "you can enable 'Demo Mode' to present a clean homework workflow."
+        if is_gemini_model and not demo_mode:
+            with st.spinner("Requesting image(s) from Google Imagen API..."):
+                images_result, error = call_google_imagen(
+                    api_key=str(api_key),
+                    prompt=final_prompt,
+                    aspect_ratio=aspect_ratio,
+                    num_images=number_of_images
                 )
-                break
+            if images_result is None:
+                st.error("Google Imagen generation failed.")
+                st.code(error, language="text")
+            else:
+                images = images_result
+        else:
+            for index in range(number_of_images):
+                current_seed = int(seed) + index
+                
+                payload = build_payload(
+                    prompt=final_payload_prompt,
+                    negative_prompt=negative_prompt,
+                    width=width,
+                    height=height,
+                    seed=current_seed,
+                    guidance_scale=float(guidance_scale),
+                    steps=int(steps),
+                )
 
-            images.append(image)
+                if demo_mode:
+                    image = make_mock_image(final_prompt, width, height, current_seed, style)
+                    images.append(image)
+                    continue
+
+                with st.spinner(f"Requesting Image {index + 1} from Hugging Face Inference..."):
+                    image, error = call_hugging_face(str(api_key), payload, model_id)
+
+                if image is None:
+                    st.error("Image generation failed.")
+                    st.code(error, language="text")
+                    break
+
+                images.append(image)
 
         if images:
             st.success("Generation complete!")
@@ -583,16 +651,16 @@ def main() -> None:
                     st.download_button(
                         label=f"💾 Download Image {i + 1}",
                         data=buffer.getvalue(),
-                        file_name=f"cosmos_generated_{i + 1}.png",
+                        file_name=f"generated_{i + 1}.png",
                         mime="image/png",
                     )
 
     st.markdown("---")
     with st.expander("🔒 API Safety & Configuration Guidelines"):
         st.markdown("""
-        * **No Hardcoding:** Never hardcode your token directly in the source file `app.py`.
-        * **Local Testing:** Create `.streamlit/secrets.toml` and write `HF_TOKEN = "your_token"` inside. It is git-ignored and secure.
-        * **Production Deployment:** Enter the secrets key `HF_TOKEN` in the **Streamlit Community Cloud Console** under app settings.
+        * **No Hardcoding:** Never hardcode your API keys directly in the source file `app.py`.
+        * **Local Testing:** Create `.streamlit/secrets.toml` and configure `HF_TOKEN = "your_token"` or `GEMINI_API_KEY = "your_key"` inside.
+        * **Production Deployment:** Configure the secrets key in the **Streamlit Community Cloud Console** under app settings.
         """)
 
 

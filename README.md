@@ -1,25 +1,17 @@
-# NVIDIA Cosmos3-Super-Text2Image Web Generator
+# Universal AI Image Generator
 
-This repository contains a deployable, high-fidelity Streamlit web application designed for generating images using NVIDIA's 64B parameter text-to-image model: **nvidia/Cosmos3-Super-Text2Image**.
+This repository contains a deployable, high-fidelity Streamlit web application designed for generating images using Google's **Imagen 3** (via Gemini API) and Black Forest Labs' **FLUX.1 Schnell** (via Hugging Face API).
 
-The application is structured to conform to the NVIDIA Cosmos 3 architecture guidelines, supporting structured **JSON-upsampled prompts** to maximize image composition, physical correctness, and alignment with the model's training distribution.
+---
 
 ## 🚀 Core Features
 
-- **Text Prompt Engineering:** Standard text prompt input with automatic style overlay (Anime, Cyberpunk, Watercolor, Photorealistic, Cinematic).
-- **JSON-Upsampled Prompt Mode (Recommended):** Auto-generates and compiles the prompt into a structured JSON string conforming to the Cosmos 3 schema:
-  - `subjects`: Main entities in the scene.
-  - `background_setting`: Contextual setting details.
-  - `comprehensive_t2i_caption`: The complete descriptive prompt.
-  - `text_and_signage_elements`: Specific text labels to render.
-  - `resolution`: Target height and width.
-  - `aspect_ratio`: Ratios formatted as `"W,H"` (e.g. `"16,9"`).
-- **Interactive JSON Preview:** Live view of the compiled JSON string before generation.
-- **Generation Parameters:** Granular control over Seed, Batch Count (Number of Images), Guidance Scale (CFG), and Inference Steps.
-- **Premium Dark UI:** Sleek cyberpunk/space gradient theme using modern typography (Outfit font) and responsive glassmorphism containers.
-- **Aesthetic Demo Mode:** High-quality mock image generation using custom Pillow art rendering for local testing if serverless Hugging Face endpoints are queued.
-- **Hugging Face Integration:** Secure API call routing to the latest Hugging Face Inference Providers.
-- **Security First:** No hardcoded tokens. Built-in support for Streamlit secrets and password fields.
+- **Google Imagen 3 Integration:** Leverage Google's state-of-the-art image generation model via the Gemini API (`imagen-3.0-generate-002`).
+- **FLUX.1 Schnell Integration:** Fast, free serverless text-to-image generation via Hugging Face.
+- **Dynamic Configuration:** Supports custom Hugging Face model IDs, and allows inputting either Hugging Face or Gemini API credentials dynamically depending on the selected model.
+- **Aesthetic Overlay Styles:** Auto-appends style details (Anime, Cyberpunk, Watercolor, Photorealistic, Cinematic) to your prompt.
+- **Interactive UI:** A modern light glassmorphism theme using clean typography, high contrast, and hover micro-animations.
+- **Demo Mode:** Local PIL graphics mockup rendering for offline testing and verification.
 
 ---
 
@@ -27,8 +19,8 @@ The application is structured to conform to the NVIDIA Cosmos 3 architecture gui
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourname/hw3-cosmos-text2image.git
-cd hw3-cosmos-text2image
+git clone https://github.com/dec591nyc/HuggingFace_Practice.git
+cd HuggingFace_Practice
 ```
 
 ### 2. Install Dependencies
@@ -36,24 +28,25 @@ cd hw3-cosmos-text2image
 pip install -r requirements.txt
 ```
 
-### 3. Set Up API Key
+### 3. Configure API Keys
 For local testing, create a file named `.streamlit/secrets.toml` in your project root:
 ```toml
-HF_TOKEN = "your_huggingface_access_token_here"
+# Hugging Face Access Token (for FLUX.1 Schnell)
+HF_TOKEN = "your_huggingface_token_here"
+
+# Google Gemini API Key (for Google Imagen 3)
+GEMINI_API_KEY = "your_gemini_api_key_here"
 ```
-*(Get your free User Access Token from your Hugging Face account settings under Access Tokens. The `.streamlit/secrets.toml` file is in `.gitignore` and will never be committed.)*
+*(The `.streamlit/secrets.toml` file is git-ignored and will never be pushed to your repository.)*
 
 ### 4. Run the App
 ```bash
 streamlit run app.py
 ```
-Open your browser and navigate to `http://localhost:8515` (or whichever port is active).
 
 ---
 
 ## ☁️ Deploying to Streamlit Community Cloud
-
-Streamlit Community Cloud allows you to deploy and showcase your app online for free:
 
 1. **Upload to GitHub:**
    - Commit all your code files (`app.py`, `requirements.txt`, `.gitignore`, `README.md`).
@@ -61,19 +54,20 @@ Streamlit Community Cloud allows you to deploy and showcase your app online for 
 2. **Deploy on Streamlit.io:**
    - Go to [Streamlit Community Cloud](https://share.streamlit.io/) and log in.
    - Click **New app**, select your GitHub repository, branch, and specify `app.py` as the main file path.
-3. **Configure Secrets:**
-   - Before clicking Deploy, open the **Advanced settings** (or go to App Settings -> Secrets after deploying).
-   - Add your Hugging Face API Token under Secrets:
+3. **Configure Advanced Secrets:**
+   - Go to App Settings -> Secrets in your Streamlit Cloud console.
+   - Add your API Keys:
      ```toml
      HF_TOKEN = "your_huggingface_token_here"
+     GEMINI_API_KEY = "your_gemini_api_key_here"
      ```
-   - Save and Deploy. Your app will automatically load the token securely.
+   - Save. Your app will automatically load these credentials securely.
 
 ---
 
 ## 🎨 Screenshots
 
-Once your local testing or deployment is complete, add screenshots to the `screenshots/` directory and check them here:
+Add screenshots to the `screenshots/` directory and check them here:
 
 ### Main Interface
 ![App Home](/screenshots/app_home.png)
@@ -85,7 +79,5 @@ Once your local testing or deployment is complete, add screenshots to the `scree
 
 ## 🔗 Submission Links
 
-- **GitHub Repository:** `https://github.com/yourname/hw3-cosmos-text2image`
+- **GitHub Repository:** `https://github.com/dec591nyc/HuggingFace_Practice`
 - **Streamlit Live Demo:** `https://your-app-name.streamlit.app`
-
-*(Replace the links above with your actual links before submitting your homework!)*
