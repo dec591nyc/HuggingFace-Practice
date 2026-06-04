@@ -507,11 +507,16 @@ def main() -> None:
         guidance_scale = st.slider("Guidance Scale (CFG)", min_value=1.0, max_value=15.0, value=7.0, step=0.5)
         steps = st.slider("Inference Steps", min_value=10, max_value=60, value=30, step=5)
         
-        demo_mode = st.checkbox(
-            "Demo Mode / Mock Mode",
-            value=False,
-            help="Enable if the Hugging Face Serverless model is queued or unavailable. This simulates generating beautiful artistic images.",
-        )
+        is_cosmos = (model_id == "nvidia/Cosmos3-Super-Text2Image")
+        if is_cosmos:
+            st.info("ℹ️ NVIDIA Cosmos 3 will run in local Demo/Mock Mode (since 64B models are not supported on Hugging Face's free serverless APIs).")
+            demo_mode = True
+        else:
+            demo_mode = st.checkbox(
+                "Demo Mode / Mock Mode",
+                value=False,
+                help="Enable to simulate image generation locally without calling Hugging Face API.",
+            )
         
         st.markdown("### 🔍 Final Payload Preview")
         if use_json_prompt:
