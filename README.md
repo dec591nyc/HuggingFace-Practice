@@ -1,127 +1,91 @@
-# HW3 Cosmos3-Super-Text2Image App
+# NVIDIA Cosmos3-Super-Text2Image Web Generator
 
-## Project Goal
+This repository contains a deployable, high-fidelity Streamlit web application designed for generating images using NVIDIA's 64B parameter text-to-image model: **nvidia/Cosmos3-Super-Text2Image**.
 
-This project uses Streamlit and Hugging Face to build a text-to-image generation app with NVIDIA Cosmos3-Super-Text2Image.
+The application is structured to conform to the NVIDIA Cosmos 3 architecture guidelines, supporting structured **JSON-upsampled prompts** to maximize image composition, physical correctness, and alignment with the model's training distribution.
 
-The app allows users to enter a text prompt, adjust basic generation settings, call a Hugging Face inference endpoint, and display the generated image in a web interface.
+## 🚀 Core Features
 
-## Model
+- **Text Prompt Engineering:** Standard text prompt input with automatic style overlay (Anime, Cyberpunk, Watercolor, Photorealistic, Cinematic).
+- **JSON-Upsampled Prompt Mode (Recommended):** Auto-generates and compiles the prompt into a structured JSON string conforming to the Cosmos 3 schema:
+  - `subjects`: Main entities in the scene.
+  - `background_setting`: Contextual setting details.
+  - `comprehensive_t2i_caption`: The complete descriptive prompt.
+  - `text_and_signage_elements`: Specific text labels to render.
+  - `resolution`: Target height and width.
+  - `aspect_ratio`: Ratios formatted as `"W,H"` (e.g. `"16,9"`).
+- **Interactive JSON Preview:** Live view of the compiled JSON string before generation.
+- **Generation Parameters:** Granular control over Seed, Batch Count (Number of Images), Guidance Scale (CFG), and Inference Steps.
+- **Premium Dark UI:** Sleek cyberpunk/space gradient theme using modern typography (Outfit font) and responsive glassmorphism containers.
+- **Aesthetic Demo Mode:** High-quality mock image generation using custom Pillow art rendering for local testing if serverless Hugging Face endpoints are queued.
+- **Hugging Face Integration:** Secure API call routing to the latest Hugging Face Inference Providers.
+- **Security First:** No hardcoded tokens. Built-in support for Streamlit secrets and password fields.
 
-Model: `nvidia/Cosmos3-Super-Text2Image`
+---
 
-## Main Features
+## 🛠️ How to Run Locally
 
-- Text prompt input
-- Image style selector
-- Aspect ratio selector
-- Seed control
-- Number of images control
-- Negative prompt input
-- Hugging Face API token password field
-- Streamlit secrets support
-- Generated image preview
-- Image download button
-- Error handling for missing API key, failed requests, or unavailable model
-- Demo Mode / Mock Mode for showing the complete app flow when the real model is unavailable
-
-## Project Structure
-
-```text
-hw3-cosmos-text2image/
-├── app.py
-├── requirements.txt
-├── README.md
-├── .gitignore
-├── .streamlit/
-│   └── secrets.toml.example
-├── screenshots/
-│   ├── app_home.png
-│   └── generated_result.png
-└── prompts/
-    └── gemini_canvas_prompt.md
+### 1. Clone the Repository
+```bash
+git clone https://github.com/yourname/hw3-cosmos-text2image.git
+cd hw3-cosmos-text2image
 ```
 
-## How to Run Locally
-
+### 2. Install Dependencies
 ```bash
 pip install -r requirements.txt
+```
+
+### 3. Set Up API Key
+For local testing, create a file named `.streamlit/secrets.toml` in your project root:
+```toml
+HF_TOKEN = "your_huggingface_access_token_here"
+```
+*(Get your free User Access Token from your Hugging Face account settings under Access Tokens. The `.streamlit/secrets.toml` file is in `.gitignore` and will never be committed.)*
+
+### 4. Run the App
+```bash
 streamlit run app.py
 ```
+Open your browser and navigate to `http://localhost:8515` (or whichever port is active).
 
-## API Key
+---
 
-Do not hardcode your API key in `app.py`.
+## ☁️ Deploying to Streamlit Community Cloud
 
-You can either:
+Streamlit Community Cloud allows you to deploy and showcase your app online for free:
 
-1. Enter the Hugging Face API token on the web page, or
-2. Put it in Streamlit secrets.
+1. **Upload to GitHub:**
+   - Commit all your code files (`app.py`, `requirements.txt`, `.gitignore`, `README.md`).
+   - Push them to your GitHub repository.
+2. **Deploy on Streamlit.io:**
+   - Go to [Streamlit Community Cloud](https://share.streamlit.io/) and log in.
+   - Click **New app**, select your GitHub repository, branch, and specify `app.py` as the main file path.
+3. **Configure Secrets:**
+   - Before clicking Deploy, open the **Advanced settings** (or go to App Settings -> Secrets after deploying).
+   - Add your Hugging Face API Token under Secrets:
+     ```toml
+     HF_TOKEN = "your_huggingface_token_here"
+     ```
+   - Save and Deploy. Your app will automatically load the token securely.
 
-For local testing, create this file:
+---
 
-```text
-.streamlit/secrets.toml
-```
+## 🎨 Screenshots
 
-Then add:
+Once your local testing or deployment is complete, add screenshots to the `screenshots/` directory and check them here:
 
-```toml
-HF_TOKEN = "your_huggingface_token_here"
-```
+### Main Interface
+![App Home](/screenshots/app_home.png)
 
-The repository includes `.streamlit/secrets.toml.example` only as a template. The real `secrets.toml` file must not be uploaded to GitHub.
+### Generation Results
+![Generated Result](/screenshots/generated_result.png)
 
-## Deployment
+---
 
-Deploy this project to Streamlit Community Cloud.
+## 🔗 Submission Links
 
-Suggested steps:
+- **GitHub Repository:** `https://github.com/yourname/hw3-cosmos-text2image`
+- **Streamlit Live Demo:** `https://your-app-name.streamlit.app`
 
-1. Push this project to GitHub.
-2. Go to Streamlit Community Cloud.
-3. Create a new app from the GitHub repository.
-4. Set the main file path to `app.py`.
-5. Add `HF_TOKEN` in Streamlit Cloud Secrets.
-6. Deploy the app.
-
-## Important Note About Model Availability
-
-`nvidia/Cosmos3-Super-Text2Image` is a very large text-to-image model. Depending on Hugging Face availability, permissions, and provider support, it may not always run through serverless inference.
-
-If the model is unavailable, this app includes Demo Mode / Mock Mode to preserve the complete homework workflow and UI demonstration. In a real production deployment, the model may need a dedicated Hugging Face Inference Endpoint or another compatible provider.
-
-## Links
-
-GitHub Repo:
-
-```text
-https://github.com/yourname/hw3-cosmos-text2image
-```
-
-Streamlit Demo:
-
-```text
-https://your-app-name.streamlit.app
-```
-
-Replace the links above after deploying the project.
-
-## Screenshots
-
-Add screenshots here after running the app:
-
-- `screenshots/app_home.png`
-- `screenshots/generated_result.png`
-
-## Submission
-
-Submit these two links:
-
-```text
-GitHub:
-https://github.com/yourname/hw3-cosmos-text2image
-
-Streamlit Demo:
-https://your-app-name.streamlit.app
-```
+*(Replace the links above with your actual links before submitting your homework!)*

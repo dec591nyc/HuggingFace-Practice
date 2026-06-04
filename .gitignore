@@ -1,0 +1,16 @@
+.streamlit/secrets.toml
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.staging
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

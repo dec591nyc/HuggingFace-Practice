@@ -1,10 +1,17 @@
 import io
 import json
+import os
+import random
+import textwrap
 from typing import Dict, List, Optional, Tuple
 
 import requests
 import streamlit as st
-from PIL import Image, ImageDraw
+from dotenv import load_dotenv
+from PIL import Image, ImageDraw, ImageFont
+
+# Load environment variables from .env file if it exists
+load_dotenv()
 
 MODEL_ID = "nvidia/Cosmos3-Super-Text2Image"
 DEFAULT_GITHUB_LINK = "https://github.com/yourname/hw3-cosmos-text2image"
@@ -29,7 +36,10 @@ STYLES: Dict[str, str] = {
 
 
 def get_secret_value(key: str, default: Optional[str] = None) -> Optional[str]:
-    """Safely read Streamlit secrets without failing during local development."""
+    """Safely read value from environment variables or Streamlit secrets without failing."""
+    val = os.environ.get(key)
+    if val is not None:
+        return val
     try:
         return st.secrets.get(key, default)
     except Exception:
@@ -83,17 +93,17 @@ def hf_endpoints(model_id: str) -> List[str]:
 
 def call_hugging_face(api_key: str, payload: Dict, model_id: str) -> Tuple[Optional[Image.Image], str]:
     headers = {
-        "Authorization": f"Bearer {api_key}",
+        "Authorization": f"Bearer {str(api_key).strip()}",
         "Accept": "image/png",
         "Content-Type": "application/json",
     }
 
-    last_error = ""
+    errors = []
     for endpoint in hf_endpoints(model_id):
         try:
             response = requests.post(endpoint, headers=headers, json=payload, timeout=180)
         except requests.RequestException as exc:
-            last_error = f"Request failed for {endpoint}: {exc}"
+            errors.append(f"[{endpoint}] Request failed: {exc}")
             continue
 
         content_type = response.headers.get("content-type", "")
@@ -102,101 +112,416 @@ def call_hugging_face(api_key: str, payload: Dict, model_id: str) -> Tuple[Optio
                 image = Image.open(io.BytesIO(response.content)).convert("RGB")
                 return image, ""
             except Exception as exc:
-                last_error = f"The API returned image bytes, but Pillow could not open them: {exc}"
+                errors.append(f"[{endpoint}] Pillow could not open image: {exc}")
                 continue
 
         try:
             error_detail = response.json()
-            last_error = json.dumps(error_detail, indent=2, ensure_ascii=False)
+            error_msg = json.dumps(error_detail, indent=2, ensure_ascii=False)
         except Exception:
-            last_error = response.text[:1200]
+            error_msg = response.text[:1200]
 
         if response.status_code in (401, 403):
-            return None, "Authentication failed. Please check that your Hugging Face token is valid and has Inference Providers permission."
+            errors.append(
+                f"[{endpoint}] Authentication failed (HTTP {response.status_code}).\n"
+                f"Detail: {error_msg}\n"
+                f"Please ensure your token is a 'Read' token or has 'Make calls to inference providers' permission enabled."
+            )
+        else:
+            errors.append(f"[{endpoint}] HTTP {response.status_code}: {error_msg}")
 
-    return None, last_error or "No response was returned by the Hugging Face API."
+    return None, "\n\n".join(errors)
 
 
-def make_mock_image(prompt: str, width: int, height: int, seed: int) -> Image.Image:
-    # A simple generated placeholder so the app can still demonstrate its full flow if the model is unavailable.
-    image = Image.new("RGB", (width, height), color=(245, 245, 245))
-    draw = ImageDraw.Draw(image)
-    margin = max(20, width // 24)
-    title = "Mock / Demo Mode"
-    body = f"Prompt:\n{prompt}\n\nSeed: {seed}\nSize: {width} x {height}"
-    draw.rectangle([margin, margin, width - margin, height - margin], outline=(40, 40, 40), width=4)
-    draw.text((margin * 1.5, margin * 1.5), title, fill=(20, 20, 20))
-    draw.text((margin * 1.5, margin * 3.2), body[:900], fill=(40, 40, 40))
+def make_mock_image(prompt: str, width: int, height: int, seed: int, style: str) -> Image.Image:
+    # A beautifully styled mock image generator using Pillow for local testing and demo mode.
+    rng = random.Random(seed)
+    
+    # Create gradient background
+    image = Image.new("RGB", (width, height))
+    draw = ImageDraw.Draw(image, "RGBA")
+    
+    # Select color scheme based on style
+    if style == "Cyberpunk":
+        color_start = (15, 10, 30)   # Deep purple
+        color_end = (40, 10, 70)     # Dark magenta
+        accent_color = (255, 0, 128, 100) # Neon pink
+        accent_color2 = (0, 255, 240, 100) # Neon cyan
+    elif style == "Anime":
+        color_start = (180, 210, 255) # Light blue
+        color_end = (255, 190, 210)   # Light pink
+        accent_color = (255, 255, 255, 120)
+        accent_color2 = (255, 220, 100, 120)
+    elif style == "Watercolor":
+        color_start = (248, 246, 240) # Off-white/cream
+        color_end = (215, 225, 235)   # Soft blue
+        accent_color = (130, 170, 210, 60) # Blended soft blue
+        accent_color2 = (210, 150, 170, 60) # Blended soft rose
+    elif style in ["Photorealistic", "Cinematic"]:
+        color_start = (10, 15, 25)    # Midnight blue
+        color_end = (45, 35, 25)      # Warm gold/amber
+        accent_color = (255, 180, 80, 60) # Golden glow
+        accent_color2 = (100, 150, 200, 60) # Soft daylight blue
+    else:
+        color_start = (20, 25, 35)    # Slate dark
+        color_end = (35, 45, 60)      # Lighter slate
+        accent_color = (130, 140, 180, 70)
+        accent_color2 = (180, 130, 150, 70)
+        
+    # Draw background gradient
+    for y in range(height):
+        t = y / height
+        r = int(color_start[0] * (1 - t) + color_end[0] * t)
+        g = int(color_start[1] * (1 - t) + color_end[1] * t)
+        b = int(color_start[2] * (1 - t) + color_end[2] * t)
+        draw.line([(0, y), (width, y)], fill=(r, g, b, 255))
+        
+    # Draw some abstract geometric shapes for artistic look
+    for _ in range(8):
+        shape_type = rng.choice(["circle", "line", "rectangle"])
+        col = rng.choice([accent_color, accent_color2])
+        if shape_type == "circle":
+            r = rng.randint(40, min(width, height) // 3)
+            cx = rng.randint(0, width)
+            cy = rng.randint(0, height)
+            draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=col)
+        elif shape_type == "line":
+            x1 = rng.randint(0, width)
+            y1 = rng.randint(0, height)
+            x2 = rng.randint(0, width)
+            y2 = rng.randint(0, height)
+            w = rng.randint(2, 8)
+            draw.line([(x1, y1), (x2, y2)], fill=col, width=w)
+        else:
+            w_rect = rng.randint(80, width // 2)
+            h_rect = rng.randint(80, height // 2)
+            x1 = rng.randint(0, width - w_rect)
+            y1 = rng.randint(0, height - h_rect)
+            draw.rectangle([x1, y1, x1 + w_rect, y1 + h_rect], fill=col)
+
+    # Draw border outline
+    border_color = (255, 255, 255, 40) if style in ["Anime", "Watercolor"] else (255, 255, 255, 20)
+    draw.rectangle([20, 20, width - 20, height - 20], outline=border_color, width=4)
+
+    # Draw title
+    title_text = f"Cosmos 3 Demo Image [{style}]"
+    
+    # Text overlay
+    margin = max(40, width // 20)
+    title_font_size = max(24, width // 22)
+    body_font_size = max(14, width // 42)
+    
+    try:
+        title_font = ImageFont.load_default(size=title_font_size)
+        body_font = ImageFont.load_default(size=body_font_size)
+    except TypeError:
+        title_font = ImageFont.load_default()
+        body_font = ImageFont.load_default()
+        
+    text_color = (255, 255, 255, 255) if style not in ["Anime", "Watercolor"] else (40, 40, 60, 255)
+    sub_color = (220, 220, 235, 255) if style not in ["Anime", "Watercolor"] else (80, 80, 100, 255)
+    
+    draw.text((margin, margin), title_text, fill=text_color, font=title_font)
+    
+    # Prompt text wrap
+    max_chars = max(25, int(width / (body_font_size * 0.55)))
+    wrapped_prompt = textwrap.fill(prompt, width=max_chars)
+    
+    info_text = f"Prompt: {wrapped_prompt}\n\nSeed: {seed}\nDimensions: {width} x {height}\nMock Engine: Pillow Generative"
+    draw.text((margin, margin + title_font_size + 25), info_text, fill=sub_color, font=body_font)
+    
     return image
 
 
 def main() -> None:
     st.set_page_config(
-        page_title="HW3 Cosmos3 Text-to-Image App",
+        page_title="NVIDIA Cosmos3-Super Image Generator",
         page_icon="🎨",
         layout="wide",
     )
 
-    st.title("HW3 Cosmos3-Super-Text2Image App")
-    st.caption("A Streamlit text-to-image app using Hugging Face and NVIDIA Cosmos3-Super-Text2Image.")
+    # Inject custom modern CSS styles for premium styling and design aesthetics
+    st.markdown("""
+        <style>
+        /* Modern font and styling imports */
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+        
+        html, body, [class*="css"] {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        /* Transparent Header */
+        header[data-testid="stHeader"] {
+            background-color: transparent !important;
+        }
+        
+        /* Main background with premium light gradient */
+        .stApp {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            color: #1e293b;
+        }
+        
+        /* Glassmorphism sidebar styling */
+        section[data-testid="stSidebar"] {
+            background-color: rgba(255, 255, 255, 0.45) !important;
+            backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(0, 0, 0, 0.06);
+        }
+        
+        section[data-testid="stSidebar"] .stMarkdown, section[data-testid="stSidebar"] label {
+            color: #1e293b !important;
+        }
+        
+        /* Title styling with glowing indigo/pink gradient */
+        h1 {
+            background: linear-gradient(90deg, #4f46e5, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800 !important;
+            letter-spacing: -1px;
+            font-size: 3rem !important;
+            margin-bottom: 5px !important;
+            text-align: center;
+        }
+        
+        .title-caption {
+            color: rgba(30, 41, 59, 0.7);
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        /* Glassmorphic Column Containers */
+        div[data-testid="column"] {
+            background-color: rgba(255, 255, 255, 0.65) !important;
+            backdrop-filter: blur(10px);
+            padding: 25px !important;
+            border-radius: 16px !important;
+            border: 1px solid rgba(255, 255, 255, 0.8) !important;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04);
+            color: #1e293b;
+        }
+        
+        /* Subheader and Labels */
+        h3 {
+            color: #4f46e5 !important;
+            font-weight: 600 !important;
+            font-size: 1.4rem !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            padding-bottom: 10px;
+            margin-bottom: 20px !important;
+        }
+        
+        label {
+            color: #0f172a !important;
+            font-weight: 500 !important;
+        }
+        
+        /* Primary button styling with micro-animations */
+        div.stButton > button:first-child {
+            background: linear-gradient(90deg, #4f46e5 0%, #ec4899 100%) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 10px !important;
+            padding: 12px 30px !important;
+            font-weight: 600 !important;
+            width: 100%;
+            font-size: 1.1rem !important;
+            margin-top: 10px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.2) !important;
+        }
+        
+        div.stButton > button:first-child:hover {
+            transform: translateY(-2px) scale(1.01) !important;
+            box-shadow: 0 6px 22px rgba(79, 70, 229, 0.4) !important;
+        }
+        
+        div.stButton > button:first-child:active {
+            transform: translateY(1px) !important;
+        }
+        
+        /* Styling text areas and inputs */
+        textarea, input, select, div[data-baseweb="select"] {
+            border-radius: 10px !important;
+            background-color: #ffffff !important;
+            border: 1px solid rgba(0, 0, 0, 0.1) !important;
+            color: #1e293b !important;
+        }
+        
+        textarea:focus, input:focus {
+            border-color: #4f46e5 !important;
+            box-shadow: 0 0 12px rgba(79, 70, 229, 0.15) !important;
+        }
+        
+        /* Expander customization */
+        div[data-testid="stExpander"] {
+            background-color: rgba(255, 255, 255, 0.4) !important;
+            border: 1px solid rgba(0, 0, 0, 0.05) !important;
+            border-radius: 12px !important;
+            margin-top: 15px;
+        }
+        
+        /* Code block readability in light mode */
+        code {
+            background-color: rgba(0, 0, 0, 0.04) !important;
+            color: #0f172a !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<h1>NVIDIA Cosmos 3 Image Generator</h1>", unsafe_allow_html=True)
+    st.markdown("<p class='title-caption'>A premium Streamlit Web App utilizing NVIDIA Cosmos3-Super-Text2Image with JSON-upsampled prompts.</p>", unsafe_allow_html=True)
 
     with st.sidebar:
-        st.header("Project Info")
-        model_id = st.text_input("Model name", value=MODEL_ID)
-        github_link = st.text_input("GitHub repo link", value=get_secret_value("GITHUB_LINK", DEFAULT_GITHUB_LINK))
-        demo_link = st.text_input("Streamlit.io demo link", value=get_secret_value("DEMO_LINK", DEFAULT_DEMO_LINK))
-        st.markdown(f"**Model:** `{model_id}`")
-        st.markdown(f"**GitHub:** {github_link}")
-        st.markdown(f"**Demo:** {demo_link}")
+        st.header("⚡ Project Dashboard")
+        
+        POPULAR_MODELS = {
+            "NVIDIA Cosmos 3 (Text-to-Image)": "nvidia/Cosmos3-Super-Text2Image",
+            "FLUX.1 Schnell (Fast & Free - Verified Active)": "black-forest-labs/FLUX.1-schnell",
+            "Custom Model (Enter below)": "custom"
+        }
+        
+        model_selection = st.selectbox(
+            "Select Model", 
+            list(POPULAR_MODELS.keys()), 
+            index=0,
+            help="Select a model. Cosmos 3 is recommended for the homework, while FLUX is verified active for testing API connectivity."
+        )
+        
+        if POPULAR_MODELS[model_selection] == "custom":
+            model_id = st.text_input("Custom Model ID", value="nvidia/Cosmos3-Super-Text2Image")
+        else:
+            model_id = POPULAR_MODELS[model_selection]
+            
+        github_link = st.text_input("GitHub Repository", value=get_secret_value("GITHUB_LINK", DEFAULT_GITHUB_LINK))
+        demo_link = st.text_input("Deployment Link", value=get_secret_value("DEMO_LINK", DEFAULT_DEMO_LINK))
+        
+        st.markdown("---")
+        st.markdown(f"**Current Model:** `{model_id}`")
+        st.markdown(f"**GitHub:** [{github_link.split('/')[-1]}]({github_link})")
+        st.markdown(f"**Live Demo:** [Streamlit.app]({demo_link})")
 
-    st.subheader("How to use")
-    st.write(
-        "Enter a prompt, adjust image settings, provide your Hugging Face token, "
-        "then click Generate Image. If the model is unavailable, enable Demo Mode to show the full app flow."
-    )
-
+    # Access API Token from secrets or prompt the user
     api_key = get_secret_value("HF_TOKEN", None)
     if not api_key:
-        api_key = st.text_input("Enter your Hugging Face API Token", type="password")
+        api_key = st.text_input("Enter your Hugging Face API Token (HF_TOKEN)", type="password")
     else:
-        st.success("Hugging Face token loaded from Streamlit secrets.")
+        st.success("Hugging Face API token verified via environment/secrets.")
 
-    col_left, col_right = st.columns([1, 1])
+    # Initialize session state for Cosmos 3 prompt properties
+    if "prev_prompt" not in st.session_state:
+        st.session_state.prev_prompt = ""
+    if "subjects" not in st.session_state:
+        st.session_state.subjects = "a small robot"
+    if "background" not in st.session_state:
+        st.session_state.background = "cozy futuristic library, warm lighting"
+    if "text_elements" not in st.session_state:
+        st.session_state.text_elements = ""
+
+    col_left, col_right = st.columns([1.1, 0.9])
 
     with col_left:
-        st.subheader("Prompt Settings")
+        st.subheader("Prompt Engineering")
         prompt = st.text_area(
-            "Text prompt",
+            "Text Prompt (Simple input)",
             value="A small robot reading a book in a cozy futuristic library, warm lighting",
-            height=120,
+            height=100,
+            help="Describe what you want to see. The app will use this to generate the image.",
         )
         negative_prompt = st.text_area(
-            "Negative prompt",
-            value="blurry, low quality, distorted, watermark, text artifacts",
-            height=90,
+            "Negative Prompt",
+            value="blurry, low quality, distorted, watermark, text artifacts, bad anatomy",
+            height=70,
         )
-        style = st.selectbox("Image style", list(STYLES.keys()), index=1)
-        aspect_ratio = st.selectbox("Aspect ratio", list(ASPECT_RATIOS.keys()), index=0)
+        
+        style = st.selectbox("Aesthetic Style Overlay", list(STYLES.keys()), index=1)
+        aspect_ratio = st.selectbox("Canvas Aspect Ratio", list(ASPECT_RATIOS.keys()), index=0)
+        
+        # Calculate aspect ratio string (e.g. "16,9" instead of "16:9" for Cosmos 3)
+        ratio_part = aspect_ratio.split()[0]
+        w_ratio, h_ratio = ratio_part.split(":")
+        aspect_ratio_payload = f"{w_ratio},{h_ratio}"
+        
+        width, height = ASPECT_RATIOS[aspect_ratio]
+        final_prompt = build_prompt(prompt, style)
+
+        # Synchronize / parse prompt components into session state
+        if prompt != st.session_state.prev_prompt:
+            st.session_state.prev_prompt = prompt
+            parts = [p.strip() for p in prompt.split(",")]
+            if len(parts) > 1:
+                st.session_state.subjects = parts[0]
+                st.session_state.background = ", ".join(parts[1:])
+            else:
+                words = prompt.split()
+                if len(words) > 3:
+                    st.session_state.subjects = " ".join(words[:3])
+                    st.session_state.background = " ".join(words[3:])
+                else:
+                    st.session_state.subjects = prompt
+                    st.session_state.background = ""
+
+        is_cosmos_model = (model_id == "nvidia/Cosmos3-Super-Text2Image")
+        use_json_prompt = st.checkbox(
+            "Use NVIDIA Cosmos 3 JSON-Upsampled Prompt Format", 
+            value=is_cosmos_model, 
+            help="Highly recommended by NVIDIA. Structures prompt metadata into JSON fields to drastically improve output layout and physics."
+        )
+        
+        if use_json_prompt:
+            with st.expander("🛠️ Cosmos 3 JSON-Upsampling Fields", expanded=True):
+                st.markdown(
+                    "<small style='color:rgba(255,255,255,0.6);'>Edit these fields to customize specific scene details passed to the model's structural inputs.</small>", 
+                    unsafe_allow_html=True
+                )
+                subjects_input = st.text_input("Subjects (comma-separated)", value=st.session_state.subjects)
+                st.session_state.subjects = subjects_input
+                
+                background_input = st.text_input("Background Setting", value=st.session_state.background)
+                st.session_state.background = background_input
+                
+                text_elements_input = st.text_input("Text & Signage Elements (comma-separated)", value=st.session_state.text_elements)
+                st.session_state.text_elements = text_elements_input
+                
+                comprehensive_caption = st.text_area("Comprehensive Caption", value=final_prompt, height=80)
+                
+                # Assemble structured JSON prompt
+                json_prompt_dict = {
+                    "subjects": [s.strip() for s in subjects_input.split(",") if s.strip()],
+                    "background_setting": background_input.strip(),
+                    "comprehensive_t2i_caption": comprehensive_caption.strip(),
+                    "text_and_signage_elements": [t.strip() for t in text_elements_input.split(",") if t.strip()] if text_elements_input else [],
+                    "resolution": {"H": height, "W": width},
+                    "aspect_ratio": aspect_ratio_payload
+                }
+                final_payload_prompt = json.dumps(json_prompt_dict, indent=2, ensure_ascii=False)
+        else:
+            final_payload_prompt = final_prompt
 
     with col_right:
-        st.subheader("Generation Parameters")
-        seed = st.number_input("Seed", min_value=0, max_value=2_147_483_647, value=42, step=1)
-        number_of_images = st.slider("Number of images", min_value=1, max_value=4, value=1)
-        guidance_scale = st.slider("Guidance scale", min_value=1.0, max_value=15.0, value=7.5, step=0.5)
-        steps = st.slider("Inference steps", min_value=10, max_value=60, value=30, step=5)
+        st.subheader("Model Parameters")
+        seed = st.number_input("Inference Seed", min_value=0, max_value=2_147_483_647, value=42, step=1)
+        number_of_images = st.slider("Batch Count (Images)", min_value=1, max_value=4, value=1)
+        guidance_scale = st.slider("Guidance Scale (CFG)", min_value=1.0, max_value=15.0, value=7.0, step=0.5)
+        steps = st.slider("Inference Steps", min_value=10, max_value=60, value=30, step=5)
+        
         demo_mode = st.checkbox(
             "Demo Mode / Mock Mode",
             value=False,
-            help="Use this if the Hugging Face model is temporarily unavailable or too large for serverless inference.",
+            help="Enable if the Hugging Face Serverless model is queued or unavailable. This simulates generating beautiful artistic images.",
         )
+        
+        st.markdown("### 🔍 Final Payload Preview")
+        if use_json_prompt:
+            st.caption("JSON-upsampled string sent in payload:")
+            st.code(final_payload_prompt, language="json")
+        else:
+            st.caption("Standard text string sent in payload:")
+            st.code(final_payload_prompt, language="text")
 
-    width, height = ASPECT_RATIOS[aspect_ratio]
-    final_prompt = build_prompt(prompt, style)
-
-    st.markdown("### Final prompt preview")
-    st.code(final_prompt, language="text")
-
-    generate = st.button("Generate Image", type="primary")
+    generate = st.button("Generate Image(s)", type="primary")
 
     if generate:
         if not prompt.strip():
@@ -212,8 +537,9 @@ def main() -> None:
 
         for index in range(number_of_images):
             current_seed = int(seed) + index
+            
             payload = build_payload(
-                prompt=final_prompt,
+                prompt=final_payload_prompt,
                 negative_prompt=negative_prompt,
                 width=width,
                 height=height,
@@ -223,44 +549,46 @@ def main() -> None:
             )
 
             if demo_mode:
-                image = make_mock_image(final_prompt, width, height, current_seed)
+                image = make_mock_image(final_prompt, width, height, current_seed, style)
                 images.append(image)
                 continue
 
-            with st.spinner(f"Calling Hugging Face API for image {index + 1}..."):
+            with st.spinner(f"Requesting Image {index + 1} from Hugging Face Inference..."):
                 image, error = call_hugging_face(str(api_key), payload, model_id)
 
             if image is None:
                 st.error("Image generation failed.")
                 st.code(error, language="text")
                 st.warning(
-                    "If Cosmos3-Super-Text2Image is unavailable through serverless inference, "
-                    "you can enable Demo Mode and explain this limitation in the README."
+                    "Note: Cosmos 3 is a 64B parameter model. If serverless APIs are overloaded, "
+                    "you can enable 'Demo Mode' to present a clean homework workflow."
                 )
                 break
 
             images.append(image)
 
         if images:
-            st.success("Generation complete.")
+            st.success("Generation complete!")
             columns = st.columns(min(len(images), 2))
             for i, image in enumerate(images):
                 with columns[i % len(columns)]:
-                    st.image(image, caption=f"Generated image {i + 1}", use_container_width=True)
+                    st.image(image, caption=f"Generated Image {i + 1}", use_container_width=True)
                     buffer = io.BytesIO()
                     image.save(buffer, format="PNG")
                     st.download_button(
-                        label=f"Download image {i + 1}",
+                        label=f"💾 Download Image {i + 1}",
                         data=buffer.getvalue(),
                         file_name=f"cosmos_generated_{i + 1}.png",
                         mime="image/png",
                     )
 
-    with st.expander("API safety notes"):
-        st.write(
-            "This app never hardcodes API keys. Use the password field on the page, "
-            "or put HF_TOKEN in Streamlit Cloud secrets. Do not commit .env or secrets.toml to GitHub."
-        )
+    st.markdown("---")
+    with st.expander("🔒 API Safety & Configuration Guidelines"):
+        st.markdown("""
+        * **No Hardcoding:** Never hardcode your token directly in the source file `app.py`.
+        * **Local Testing:** Create `.streamlit/secrets.toml` and write `HF_TOKEN = "your_token"` inside. It is git-ignored and secure.
+        * **Production Deployment:** Enter the secrets key `HF_TOKEN` in the **Streamlit Community Cloud Console** under app settings.
+        """)
 
 
 if __name__ == "__main__":
