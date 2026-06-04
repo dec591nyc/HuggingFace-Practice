@@ -609,6 +609,7 @@ def main() -> None:
             with st.spinner("Requesting image(s) from Google Imagen API..."):
                 images_result, error = call_google_imagen(
                     api_key=str(api_key),
+                    model_id=model_id,
                     prompt=final_prompt,
                     aspect_ratio=aspect_ratio,
                     num_images=number_of_images
