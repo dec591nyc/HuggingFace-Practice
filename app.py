@@ -420,15 +420,33 @@ def main() -> None:
         }
 
         /* Fix selectbox dropdown options for Light Mode */
-        div[role="option"] {
+        div[data-baseweb="popover"],
+        div[data-baseweb="popover"] *,
+        div[role="listbox"],
+        div[role="listbox"] *,
+        ul[role="listbox"],
+        ul[role="listbox"] * {
+            background-color: #ffffff !important;
             color: #0f172a !important;
-            background-color: #ffffff !important;
         }
-        div[role="option"]:hover {
+        div[role="option"]:hover,
+        li[role="option"]:hover,
+        div[data-baseweb="popover"] li:hover,
+        div[data-baseweb="popover"] div[role="option"]:hover {
             background-color: #f1f5f9 !important;
+            color: #0f172a !important;
         }
-        ul[role="listbox"] {
-            background-color: #ffffff !important;
+
+        /* Fix Password Show button for Light Mode */
+        div[data-baseweb="input"] button,
+        div[data-testid="stTextInput"] button {
+            background-color: transparent !important;
+            color: #0f172a !important;
+            border: none !important;
+        }
+        div[data-baseweb="input"] button:hover,
+        div[data-testid="stTextInput"] button:hover {
+            background-color: rgba(15, 23, 42, 0.08) !important;
         }
         """
     else:
@@ -485,15 +503,33 @@ def main() -> None:
         }
 
         /* Fix selectbox dropdown options for Dark Mode */
-        div[role="option"] {
+        div[data-baseweb="popover"],
+        div[data-baseweb="popover"] *,
+        div[role="listbox"],
+        div[role="listbox"] *,
+        ul[role="listbox"],
+        ul[role="listbox"] * {
+            background-color: #111827 !important;
             color: #f3f4f6 !important;
-            background-color: #111827 !important;
         }
-        div[role="option"]:hover {
+        div[role="option"]:hover,
+        li[role="option"]:hover,
+        div[data-baseweb="popover"] li:hover,
+        div[data-baseweb="popover"] div[role="option"]:hover {
             background-color: #1f2937 !important;
+            color: #f3f4f6 !important;
         }
-        ul[role="listbox"] {
-            background-color: #111827 !important;
+
+        /* Fix Password Show button for Dark Mode */
+        div[data-baseweb="input"] button,
+        div[data-testid="stTextInput"] button {
+            background-color: transparent !important;
+            color: #f3f4f6 !important;
+            border: none !important;
+        }
+        div[data-baseweb="input"] button:hover,
+        div[data-testid="stTextInput"] button:hover {
+            background-color: rgba(255, 255, 255, 0.08) !important;
         }
         """
 
