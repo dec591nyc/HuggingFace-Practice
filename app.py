@@ -15,8 +15,8 @@ from PIL import Image, ImageDraw, ImageFont
 load_dotenv()
 
 MODEL_ID = "black-forest-labs/FLUX.1-schnell"
-DEFAULT_GITHUB_LINK = "https://github.com/dec591nyc/HuggingFace_Practice"
-DEFAULT_DEMO_LINK = "https://your-app-name.streamlit.app"
+DEFAULT_GITHUB_LINK = "https://github.com/dec591nyc/HuggingFace-Practice"
+DEFAULT_DEMO_LINK = "https://huggingface-practice-dec591nyc.streamlit.app"
 
 ASPECT_RATIOS: Dict[str, Tuple[int, int]] = {
     "1:1 Square": (1024, 1024),
@@ -257,21 +257,21 @@ def main() -> None:
             background-color: transparent !important;
         }
         
-        /* Main background with premium light gradient */
+        /* Main background using Streamlit variables for Dark/Light responsiveness */
         .stApp {
-            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
-            color: #1e293b;
+            background: linear-gradient(135deg, var(--background-color) 0%, var(--secondary-background-color) 100%);
+            color: var(--text-color);
         }
         
         /* Glassmorphism sidebar styling */
         section[data-testid="stSidebar"] {
-            background-color: rgba(255, 255, 255, 0.45) !important;
+            background-color: var(--secondary-background-color) !important;
             backdrop-filter: blur(15px);
-            border-right: 1px solid rgba(0, 0, 0, 0.06);
+            border-right: 1px solid var(--st-border-color, rgba(128, 128, 128, 0.2));
         }
         
-        section[data-testid="stSidebar"] .stMarkdown, section[data-testid="stSidebar"] label {
-            color: #1e293b !important;
+        section[data-testid="stSidebar"] .stMarkdown, section[data-testid="stSidebar"] label, section[data-testid="stSidebar"] span {
+            color: var(--text-color) !important;
         }
         
         /* Title styling with glowing indigo/pink gradient */
@@ -287,7 +287,8 @@ def main() -> None:
         }
         
         .title-caption {
-            color: rgba(30, 41, 59, 0.7);
+            color: var(--text-color);
+            opacity: 0.8;
             font-size: 1.1rem;
             text-align: center;
             margin-bottom: 30px;
@@ -295,29 +296,29 @@ def main() -> None:
         
         /* Glassmorphic Column Containers */
         div[data-testid="column"] {
-            background-color: rgba(255, 255, 255, 0.65) !important;
+            background-color: var(--secondary-background-color) !important;
             backdrop-filter: blur(10px);
             padding: 25px !important;
             border-radius: 16px !important;
-            border: 1px solid rgba(255, 255, 255, 0.8) !important;
+            border: 1px solid var(--st-border-color, rgba(128, 128, 128, 0.2)) !important;
             margin-bottom: 20px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04);
-            color: #1e293b;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+            color: var(--text-color) !important;
         }
         
         /* Subheader and Labels */
         h3 {
-            color: #4f46e5 !important;
+            color: var(--primary-color, #4f46e5) !important;
             font-weight: 600 !important;
             font-size: 1.4rem !important;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid var(--st-border-color, rgba(128, 128, 128, 0.2));
             padding-bottom: 10px;
             margin-bottom: 20px !important;
         }
         
-        label {
-            color: #0f172a !important;
-            font-weight: 500 !important;
+        label, p, span, li {
+            color: var(--text-color) !important;
+            font-weight: 500;
         }
         
         /* Primary button styling with micro-animations */
@@ -347,28 +348,28 @@ def main() -> None:
         /* Styling text areas and inputs */
         textarea, input, select, div[data-baseweb="select"] {
             border-radius: 10px !important;
-            background-color: #ffffff !important;
-            border: 1px solid rgba(0, 0, 0, 0.1) !important;
-            color: #1e293b !important;
+            background-color: var(--background-color) !important;
+            border: 1px solid var(--st-border-color, rgba(128, 128, 128, 0.2)) !important;
+            color: var(--text-color) !important;
         }
         
         textarea:focus, input:focus {
-            border-color: #4f46e5 !important;
+            border-color: var(--primary-color, #4f46e5) !important;
             box-shadow: 0 0 12px rgba(79, 70, 229, 0.15) !important;
         }
         
         /* Expander customization */
         div[data-testid="stExpander"] {
-            background-color: rgba(255, 255, 255, 0.4) !important;
-            border: 1px solid rgba(0, 0, 0, 0.05) !important;
+            background-color: var(--secondary-background-color) !important;
+            border: 1px solid var(--st-border-color, rgba(128, 128, 128, 0.2)) !important;
             border-radius: 12px !important;
             margin-top: 15px;
         }
         
-        /* Code block readability in light mode */
+        /* Code block readability */
         code {
-            background-color: rgba(0, 0, 0, 0.04) !important;
-            color: #0f172a !important;
+            background-color: var(--secondary-background-color) !important;
+            color: var(--text-color) !important;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -395,14 +396,13 @@ def main() -> None:
             model_id = st.text_input("Custom Model ID", value="black-forest-labs/FLUX.1-schnell")
         else:
             model_id = POPULAR_MODELS[model_selection]
+            st.caption(f"Model ID: `{model_id}`")
             
-        github_link = st.text_input("GitHub Repository", value=get_secret_value("GITHUB_LINK", DEFAULT_GITHUB_LINK))
-        demo_link = st.text_input("Deployment Link", value=get_secret_value("DEMO_LINK", DEFAULT_DEMO_LINK))
-        
         st.markdown("---")
-        st.markdown(f"**Current Model:** `{model_id}`")
-        st.markdown(f"**GitHub:** [{github_link.split('/')[-1]}]({github_link})")
-        st.markdown(f"**Live Demo:** [Streamlit.app]({demo_link})")
+        github_link = get_secret_value("GITHUB_LINK", DEFAULT_GITHUB_LINK)
+        demo_link = get_secret_value("DEMO_LINK", DEFAULT_DEMO_LINK)
+        st.markdown(f"🔗 **GitHub:** [HuggingFace-Practice]({github_link})")
+        st.markdown(f"🔗 **Live Demo:** [Streamlit.app]({demo_link})")
 
     # Access API Token for Hugging Face
     api_key = get_secret_value("HF_TOKEN", None)

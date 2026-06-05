@@ -2,6 +2,8 @@
 
 This repository contains a deployable, high-fidelity Streamlit web application designed for generating images using Black Forest Labs' **FLUX.1 Schnell** (via Hugging Face API).
 
+🔗 **Live Demo**: [https://huggingface-practice-dec591nyc.streamlit.app](https://huggingface-practice-dec591nyc.streamlit.app)
+
 ---
 
 ## 🚀 Core Features
@@ -18,8 +20,8 @@ This repository contains a deployable, high-fidelity Streamlit web application d
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/dec591nyc/HuggingFace_Practice.git
-cd HuggingFace_Practice
+git clone https://github.com/dec591nyc/HuggingFace-Practice.git
+cd HuggingFace-Practice
 ```
 
 ### 2. Install Dependencies
@@ -74,5 +76,5 @@ Add screenshots to the `screenshots/` directory and check them here:
 
 ## 🔗 Submission Links
 
-- **GitHub Repository:** `https://github.com/dec591nyc/HuggingFace_Practice`
-- **Streamlit Live Demo:** `https://your-app-name.streamlit.app`
+- **GitHub Repository:** `https://github.com/dec591nyc/HuggingFace-Practice`
+- **Streamlit Live Demo:** `https://huggingface-practice-dec591nyc.streamlit.app`
