@@ -692,9 +692,10 @@ def main() -> None:
             font-weight: 500;
         }
         
-        /* Primary button styling with micro-animations */
-        div.stButton > button:first-child {
-            background: linear-gradient(90deg, #4f46e5 0%, #ec4899 100%) !important;
+        /* Primary button styling with micro-animations and orange-to-green gradient */
+        div.stButton > button:first-child,
+        .stBaseButton-primary {
+            background: linear-gradient(90deg, #ff781e 0%, #22c55e 100%) !important;
             color: white !important;
             border: none !important;
             border-radius: 10px !important;
@@ -704,15 +705,19 @@ def main() -> None:
             font-size: 1.1rem !important;
             margin-top: 10px;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.2) !important;
+            box-shadow: 0 4px 15px rgba(255, 120, 30, 0.25) !important;
         }
         
-        div.stButton > button:first-child:hover {
+        div.stButton > button:first-child:hover,
+        .stBaseButton-primary:hover {
             transform: translateY(-2px) scale(1.01) !important;
-            box-shadow: 0 6px 22px rgba(79, 70, 229, 0.4) !important;
+            box-shadow: 0 6px 22px rgba(255, 120, 30, 0.4) !important;
+            background: linear-gradient(90deg, #ff781e 0%, #22c55e 100%) !important;
+            color: white !important;
         }
         
-        div.stButton > button:first-child:active {
+        div.stButton > button:first-child:active,
+        .stBaseButton-primary:active {
             transform: translateY(1px) !important;
         }
         
