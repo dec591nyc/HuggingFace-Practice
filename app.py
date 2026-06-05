@@ -360,9 +360,9 @@ def main() -> None:
             
             def format_theme(option):
                 if lang == "English":
-                    return "Dark 🌙" if option == "Dark" else "Light ☀️"
+                    return "Dark" if option == "Dark" else "Light"
                 else:
-                    return "深色 🌙" if option == "Dark" else "淺色 ☀️"
+                    return "深色" if option == "Dark" else "淺色"
             
             if "is_light" not in st.session_state:
                 st.session_state.is_light = False
@@ -411,28 +411,49 @@ def main() -> None:
         div[data-baseweb="select"] > div,
         div[data-baseweb="input"] > div,
         div[data-baseweb="textarea"] > div,
-        .st-d1,
-        .st-d0,
-        .st-d2,
-        .st-d3,
-        .st-c9,
-        .st-c8,
-        .st-c7,
         div[data-baseweb="select"] ul {
             background-color: #ffffff !important;
             color: #0f172a !important;
-            border: 1px solid rgba(15, 23, 42, 0.15) !important;
+            border-color: rgba(15, 23, 42, 0.15) !important;
         }
-        /* Ensure all text under sliders is readable (dark) in Light Mode */
+
+        /* Ensure all text under sliders is readable in Light Mode */
         .stSlider p, .stSlider span, .stSlider div {
             color: #0f172a !important;
         }
-        
+
+        /* Number input +/- buttons Light Mode */
+        div[data-testid="stNumberInput"] button,
+        div[data-baseweb="input"] button[kind="minimal"] {
+            background-color: #e2e8f0 !important;
+            color: #0f172a !important;
+            border: 1px solid rgba(15, 23, 42, 0.1) !important;
+        }
+        div[data-testid="stNumberInput"] button:hover {
+            background-color: #cbd5e1 !important;
+        }
+
+        /* Checkbox Light Mode */
+        div[data-testid="stCheckbox"] label span[data-testid="stCheckbox-label"] {
+            color: #0f172a !important;
+        }
+        div[role="checkbox"],
+        div[data-baseweb="checkbox"] div {
+            border-color: rgba(15, 23, 42, 0.3) !important;
+        }
+
+        /* Expander Light Mode */
         div[data-testid="stExpander"] {
             background-color: #ffffff !important;
             border: 1px solid rgba(15, 23, 42, 0.1) !important;
         }
-        
+        div[data-testid="stExpander"] summary,
+        div[data-testid="stExpander"] summary span,
+        div[data-testid="stExpander"] summary p {
+            color: #0f172a !important;
+        }
+
+        /* Column containers Light Mode */
         div[data-testid="column"] {
             background-color: rgba(255, 255, 255, 0.8) !important;
             border: 1px solid rgba(15, 23, 42, 0.08) !important;
@@ -443,7 +464,7 @@ def main() -> None:
         h1, h2, h3, h4, h5, h6, p, span, li, label {
             color: #0f172a !important;
         }
-        
+
         code {
             background-color: #f1f5f9 !important;
             color: #0f172a !important;
@@ -467,7 +488,7 @@ def main() -> None:
             color: #0f172a !important;
         }
 
-        /* Fix Password Show/Hide button for Light Mode (covering focus/active/state-change states) */
+        /* Fix Password Show/Hide button for Light Mode */
         div[data-baseweb="input"] button,
         div[data-baseweb="input"] button:focus,
         div[data-baseweb="input"] button:active,
@@ -595,9 +616,15 @@ def main() -> None:
         /* Modern font and styling imports */
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
         
-        /* Enforce global custom font and emoji fallback for all elements except code blocks */
-        *:not(code):not(pre):not(kbd):not(samp) {
-            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI Symbol", "Apple Color Emoji", "Noto Color Emoji", sans-serif !important;
+        /* Apply custom font to text-bearing elements only, preserving icon fonts */
+        html, body, [class*="css"],
+        h1, h2, h3, h4, h5, h6, p, span, li, label,
+        input, textarea, select, button,
+        div[data-baseweb="select"],
+        div[data-testid="stMarkdownContainer"],
+        .stMarkdown, .stTextInput, .stTextArea, .stSelectbox,
+        .stSlider, .stNumberInput, .stCheckbox {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol", "Apple Color Emoji", "Noto Color Emoji", sans-serif !important;
         }
         
         /* Maintain monospace for code elements */
