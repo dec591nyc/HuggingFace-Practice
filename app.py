@@ -595,8 +595,14 @@ def main() -> None:
         /* Modern font and styling imports */
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
         
-        html, body, [class*="css"] {
-            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI Symbol", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+        /* Enforce global custom font and emoji fallback for all elements except code blocks */
+        *:not(code):not(pre):not(kbd):not(samp) {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI Emoji", "Segoe UI Symbol", "Apple Color Emoji", "Noto Color Emoji", sans-serif !important;
+        }
+        
+        /* Maintain monospace for code elements */
+        code, pre, kbd, samp {
+            font-family: monospace, Courier, "Courier New" !important;
         }
         
         /* Hide Header entirely to save space */
