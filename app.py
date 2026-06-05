@@ -352,7 +352,6 @@ def main() -> None:
             lang_label = "🌐 Language" if lang == "English" else "🌐 語言"
             lang_idx = 0 if lang == "English" else 1
             lang = st.selectbox(lang_label, ["English", "繁體中文"], index=lang_idx, key="lang")
-            st.session_state.lang = lang
             t = TRANSLATIONS[lang]
         with col_theme:
             theme_label = "🌓 Theme" if lang == "English" else "🌓 主題"
