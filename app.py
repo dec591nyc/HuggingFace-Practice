@@ -354,8 +354,9 @@ def main() -> None:
             lang = st.selectbox(lang_label, ["English", "繁體中文"], index=lang_idx, key="lang")
             t = TRANSLATIONS[lang]
         with col_theme:
-            theme_label = "🌓 Theme" if lang == "English" else "🌓 主題"
-            theme_options = ["Dark", "Light"] if lang == "English" else ["深色", "淺色"]
+            # 使用固定選項和 Label 以維持 widget 在語系切換時的狀態穩定性
+            theme_label = "🌓 主題 / Theme"
+            theme_options = ["Dark / 深色 🌙", "Light / 淺色 ☀️"]
             
             # Use boolean state for language-independent theme tracking
             if "is_light" not in st.session_state:
@@ -363,7 +364,7 @@ def main() -> None:
             
             theme_idx = 1 if st.session_state.is_light else 0
             theme_mode = st.selectbox(theme_label, theme_options, index=theme_idx)
-            st.session_state.is_light = (theme_mode in ["Light", "淺色"])
+            st.session_state.is_light = (theme_mode == "Light / 淺色 ☀️")
             is_light = st.session_state.is_light
 
     if is_light:
@@ -437,12 +438,17 @@ def main() -> None:
             color: #0f172a !important;
         }
 
-        /* Fix Password Show button for Light Mode */
+        /* Fix Password Show/Hide button for Light Mode (covering focus/active/state-change states) */
         div[data-baseweb="input"] button,
-        div[data-testid="stTextInput"] button {
+        div[data-baseweb="input"] button:focus,
+        div[data-baseweb="input"] button:active,
+        div[data-testid="stTextInput"] button,
+        div[data-testid="stTextInput"] button:focus,
+        div[data-testid="stTextInput"] button:active {
             background-color: transparent !important;
             color: #0f172a !important;
             border: none !important;
+            box-shadow: none !important;
         }
         div[data-baseweb="input"] button:hover,
         div[data-testid="stTextInput"] button:hover {
@@ -520,12 +526,17 @@ def main() -> None:
             color: #f3f4f6 !important;
         }
 
-        /* Fix Password Show button for Dark Mode */
+        /* Fix Password Show/Hide button for Dark Mode (covering focus/active/state-change states) */
         div[data-baseweb="input"] button,
-        div[data-testid="stTextInput"] button {
+        div[data-baseweb="input"] button:focus,
+        div[data-baseweb="input"] button:active,
+        div[data-testid="stTextInput"] button,
+        div[data-testid="stTextInput"] button:focus,
+        div[data-testid="stTextInput"] button:active {
             background-color: transparent !important;
             color: #f3f4f6 !important;
             border: none !important;
+            box-shadow: none !important;
         }
         div[data-baseweb="input"] button:hover,
         div[data-testid="stTextInput"] button:hover {
