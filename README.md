@@ -3,7 +3,6 @@
 這是基於 Streamlit 建立的現代化 AI 繪圖網頁應用程式，專注於提供極致簡潔且穩定的操作體驗。
 
 🔗 **線上展示 (Live Demo)**: [https://huggingface-practice-dec591nyc.streamlit.app](https://huggingface-practice-dec591nyc.streamlit.app)
-🔗 **GitHub 儲存庫**: [https://github.com/dec591nyc/HuggingFace-Practice](https://github.com/dec591nyc/HuggingFace-Practice)
 
 ---
 
@@ -44,4 +43,3 @@
 ```toml
 HF_TOKEN = "您的_Hugging_Face_Token"
 ```
-*(注意：此檔案已被加入 `.gitignore`，不會被上傳至 GitHub)*
