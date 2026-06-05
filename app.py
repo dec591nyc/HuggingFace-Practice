@@ -411,6 +411,13 @@ def main() -> None:
         div[data-baseweb="select"] > div,
         div[data-baseweb="input"] > div,
         div[data-baseweb="textarea"] > div,
+        .st-d1,
+        .st-d0,
+        .st-d2,
+        .st-d3,
+        .st-c9,
+        .st-c8,
+        .st-c7,
         div[data-baseweb="select"] ul {
             background-color: #ffffff !important;
             color: #0f172a !important;
@@ -634,13 +641,25 @@ def main() -> None:
         
         /* Apply custom font to text-bearing elements only, preserving icon fonts */
         html, body, [class*="css"],
-        h1, h2, h3, h4, h5, h6, p, span, li, label,
+        h1, h2, h3, h4, h5, h6, p, li, label,
         input, textarea, select, button,
         div[data-baseweb="select"],
         div[data-testid="stMarkdownContainer"],
         .stMarkdown, .stTextInput, .stTextArea, .stSelectbox,
         .stSlider, .stNumberInput, .stCheckbox {
             font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol", "Apple Color Emoji", "Noto Color Emoji", sans-serif !important;
+        }
+
+        /* Apply font to span elements EXCEPT Material Icons used by Streamlit for icons */
+        span:not([class*="material"]):not([data-icon]) {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol", "Apple Color Emoji", "Noto Color Emoji", sans-serif !important;
+        }
+
+        /* Protect Material Icons / Material Symbols font from being overridden */
+        [class*="material-symbols"],
+        [class*="material-icons"],
+        .e1nzilvr5 {
+            font-family: 'Material Symbols Rounded', 'Material Icons', sans-serif !important;
         }
         
         /* Maintain monospace for code elements */
