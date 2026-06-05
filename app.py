@@ -354,17 +354,28 @@ def main() -> None:
             lang = st.selectbox(lang_label, ["English", "繁體中文"], index=lang_idx, key="lang")
             t = TRANSLATIONS[lang]
         with col_theme:
-            # 使用固定選項和 Label 以維持 widget 在語系切換時的狀態穩定性
-            theme_label = "🌓 主題 / Theme"
-            theme_options = ["Dark / 深色 🌙", "Light / 淺色 ☀️"]
+            # 使用 format_func 與固定選項，既能實現多國語系顯示，又能保持 widget 狀態穩定
+            theme_label = "🌓 Theme" if lang == "English" else "🌓 主題"
+            theme_options = ["Dark", "Light"]
             
-            # Use boolean state for language-independent theme tracking
+            def format_theme(option):
+                if lang == "English":
+                    return "Dark 🌙" if option == "Dark" else "Light ☀️"
+                else:
+                    return "深色 🌙" if option == "Dark" else "淺色 ☀️"
+            
             if "is_light" not in st.session_state:
                 st.session_state.is_light = False
             
             theme_idx = 1 if st.session_state.is_light else 0
-            theme_mode = st.selectbox(theme_label, theme_options, index=theme_idx)
-            st.session_state.is_light = (theme_mode == "Light / 淺色 ☀️")
+            theme_mode = st.selectbox(
+                theme_label, 
+                theme_options, 
+                index=theme_idx, 
+                format_func=format_theme,
+                key="theme_selection_widget"
+            )
+            st.session_state.is_light = (theme_mode == "Light")
             is_light = st.session_state.is_light
 
     if is_light:
@@ -393,10 +404,28 @@ def main() -> None:
         }
         
         /* Make form elements legible in Light Mode */
-        textarea, input, select, div[data-baseweb="select"], div[data-baseweb="select"] > div {
+        textarea, 
+        input, 
+        select, 
+        div[data-baseweb="select"], 
+        div[data-baseweb="select"] > div,
+        div[data-baseweb="input"] > div,
+        div[data-baseweb="textarea"] > div,
+        .st-d1,
+        .st-d0,
+        .st-d2,
+        .st-d3,
+        .st-c9,
+        .st-c8,
+        .st-c7,
+        div[data-baseweb="select"] ul {
             background-color: #ffffff !important;
             color: #0f172a !important;
             border: 1px solid rgba(15, 23, 42, 0.15) !important;
+        }
+        /* Ensure all text under sliders is readable (dark) in Light Mode */
+        .stSlider p, .stSlider span, .stSlider div {
+            color: #0f172a !important;
         }
         
         div[data-testid="stExpander"] {
@@ -481,7 +510,21 @@ def main() -> None:
         }
         
         /* Make form elements legible in Dark Mode */
-        textarea, input, select, div[data-baseweb="select"], div[data-baseweb="select"] > div {
+        textarea, 
+        input, 
+        select, 
+        div[data-baseweb="select"], 
+        div[data-baseweb="select"] > div,
+        div[data-baseweb="input"] > div,
+        div[data-baseweb="textarea"] > div,
+        .st-d1,
+        .st-d0,
+        .st-d2,
+        .st-d3,
+        .st-c9,
+        .st-c8,
+        .st-c7,
+        div[data-baseweb="select"] ul {
             background-color: #111827 !important;
             color: #f3f4f6 !important;
             border: 1px solid rgba(255, 255, 255, 0.15) !important;
