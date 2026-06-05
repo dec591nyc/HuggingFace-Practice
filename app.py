@@ -40,7 +40,7 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
     "English": {
         "title": "Universal AI Image Generator",
         "subtitle": "A modern AI Image Generator supporting FLUX and Stable Diffusion (SDXL).",
-        "project_dashboard": "⚙️ Model Settings",
+        "project_dashboard": "Model Settings",
         "select_model": "Select Model",
         "prompt_eng": "Prompt Engineering",
         "hf_token_label": "Enter your Hugging Face API Token",
@@ -50,7 +50,7 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "prompt_default": "A small robot reading a book in a cozy futuristic library, warm lighting",
         "style_label": "Aesthetic Style Overlay",
         "aspect_ratio_label": "Canvas Aspect Ratio",
-        "advanced_params": "⚙️ Advanced Parameters",
+        "advanced_params": "Advanced Parameters",
         "neg_prompt_label": "Negative Prompt",
         "seed_label": "Inference Seed",
         "batch_count_label": "Batch Count (Images)",
@@ -67,8 +67,8 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "error_failed_seed": "Seed {seed}: {error}",
         "error_gen_failed": "Image generation failed:\n{err}",
         "success_gen": "Generation completed successfully!",
-        "download_btn": "💾 Download (Seed {seed})",
-        "placeholder_text": "🎨 Your generated images will appear here. Enter a prompt and click 'Generate Image(s)' on the left.",
+        "download_btn": "Download (Seed {seed})",
+        "placeholder_text": "Your generated images will appear here. Enter a prompt and click 'Generate Image(s)' on the left.",
         "styles": {
             "None": "None",
             "Photorealistic": "Photorealistic",
@@ -88,7 +88,7 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
     "繁體中文": {
         "title": "通用 AI 繪圖生成器",
         "subtitle": "支援 FLUX 與 Stable Diffusion (SDXL) 的精美 AI 繪圖工具。",
-        "project_dashboard": "⚙️ 模型設定",
+        "project_dashboard": "模型設定",
         "select_model": "選擇模型",
         "prompt_eng": "提示詞工程",
         "hf_token_label": "請輸入 Hugging Face API Token",
@@ -98,7 +98,7 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "prompt_default": "一隻小機器人在溫馨的未來感圖書館裡看書，溫暖的燈光",
         "style_label": "藝術風格套用 (Style)",
         "aspect_ratio_label": "畫布比例 (Aspect Ratio)",
-        "advanced_params": "⚙️ 進階參數設定",
+        "advanced_params": "進階參數設定",
         "neg_prompt_label": "負向提示詞 (Negative Prompt)",
         "seed_label": "隨機種子 (Seed)",
         "batch_count_label": "生成張數 (Batch Count)",
@@ -115,8 +115,8 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "error_failed_seed": "種子 {seed}: {error}",
         "error_gen_failed": "圖片生成失敗：\n{err}",
         "success_gen": "圖片生成成功！",
-        "download_btn": "💾 下載圖片 (種子 {seed})",
-        "placeholder_text": "🎨 生成的圖片將會顯示在這裡。請在左側輸入提示詞並點選「開始生成圖片」。",
+        "download_btn": "下載圖片 (種子 {seed})",
+        "placeholder_text": "生成的圖片將會顯示在這裡。請在左側輸入提示詞並點選「開始生成圖片」。",
         "styles": {
             "None": "無風格套用",
             "Photorealistic": "寫實相片風格",
@@ -442,15 +442,31 @@ def main() -> None:
             border-color: rgba(15, 23, 42, 0.3) !important;
         }
 
-        /* Expander Light Mode */
+        /* Expander Light Mode — override summary bar and ALL children backgrounds */
         div[data-testid="stExpander"] {
             background-color: #ffffff !important;
             border: 1px solid rgba(15, 23, 42, 0.1) !important;
         }
-        div[data-testid="stExpander"] summary,
-        div[data-testid="stExpander"] summary span,
-        div[data-testid="stExpander"] summary p {
+        div[data-testid="stExpander"] summary {
+            background-color: #f1f5f9 !important;
             color: #0f172a !important;
+        }
+        div[data-testid="stExpander"] summary * {
+            background-color: transparent !important;
+            color: #0f172a !important;
+            fill: #0f172a !important;
+        }
+        div[data-testid="stExpander"] summary svg {
+            fill: #0f172a !important;
+            stroke: #0f172a !important;
+        }
+        div[data-testid="stExpander"] > details > div {
+            background-color: #ffffff !important;
+        }
+
+        /* Catch-all: force Light background on Streamlit generated classes inside form elements */
+        div[data-testid="stExpander"] [class*="st-"] {
+            background-color: transparent !important;
         }
 
         /* Column containers Light Mode */
