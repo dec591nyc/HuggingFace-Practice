@@ -379,266 +379,54 @@ def main() -> None:
             is_light = st.session_state.is_light
 
     if is_light:
-        theme_css = """
-        :root {
-            --background-color: #f8fafc !important;
-            --secondary-background-color: #ffffff !important;
-            --text-color: #0f172a !important;
-            --primary-color: #4f46e5 !important;
-            --st-border-color: rgba(15, 23, 42, 0.08) !important;
-        }
-        
-        /* Light mode adjustments */
-        [data-testid="stApp"] {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
-            color: #0f172a !important;
-        }
-        
-        section[data-testid="stSidebar"] {
-            background-color: rgba(241, 245, 249, 0.9) !important;
-            border-right: 1px solid rgba(15, 23, 42, 0.08) !important;
-        }
-        
-        section[data-testid="stSidebar"] .stMarkdown, section[data-testid="stSidebar"] label, section[data-testid="stSidebar"] span, section[data-testid="stSidebar"] p {
-            color: #0f172a !important;
-        }
-        
-        /* Make form elements legible in Light Mode */
-        textarea, 
-        input, 
-        select, 
-        div[data-baseweb="select"], 
-        div[data-baseweb="select"] > div,
-        div[data-baseweb="input"] > div,
-        div[data-baseweb="textarea"] > div,
-        .st-d1,
-        .st-d0,
-        .st-d2,
-        .st-d3,
-        .st-c9,
-        .st-c8,
-        .st-c7,
-        div[data-baseweb="select"] ul {
-            background-color: #ffffff !important;
-            color: #0f172a !important;
-            border-color: rgba(15, 23, 42, 0.15) !important;
-        }
-
-        /* Ensure all text under sliders is readable in Light Mode */
-        .stSlider p, .stSlider span, .stSlider div {
-            color: #0f172a !important;
-        }
-
-        /* Number input +/- buttons Light Mode */
-        div[data-testid="stNumberInput"] button,
-        div[data-baseweb="input"] button[kind="minimal"] {
-            background-color: #e2e8f0 !important;
-            color: #0f172a !important;
-            border: 1px solid rgba(15, 23, 42, 0.1) !important;
-        }
-        div[data-testid="stNumberInput"] button:hover {
-            background-color: #cbd5e1 !important;
-        }
-
-        /* Checkbox Light Mode */
-        div[data-testid="stCheckbox"] label span[data-testid="stCheckbox-label"] {
-            color: #0f172a !important;
-        }
-        div[role="checkbox"],
-        div[data-baseweb="checkbox"] div {
-            border-color: rgba(15, 23, 42, 0.3) !important;
-        }
-
-        /* Expander Light Mode — override summary bar and ALL children backgrounds */
-        div[data-testid="stExpander"] {
-            background-color: #ffffff !important;
-            border: 1px solid rgba(15, 23, 42, 0.1) !important;
-        }
-        div[data-testid="stExpander"] summary {
-            background-color: #f1f5f9 !important;
-            color: #0f172a !important;
-        }
-        div[data-testid="stExpander"] summary * {
-            background-color: transparent !important;
-            color: #0f172a !important;
-            fill: #0f172a !important;
-        }
-        div[data-testid="stExpander"] summary svg {
-            fill: #0f172a !important;
-            stroke: #0f172a !important;
-        }
-        div[data-testid="stExpander"] > details > div {
-            background-color: #ffffff !important;
-        }
-
-        /* Catch-all: force Light background on Streamlit generated classes inside form elements */
-        div[data-testid="stExpander"] [class*="st-"] {
-            background-color: transparent !important;
-        }
-
-        /* Column containers Light Mode */
-        div[data-testid="column"] {
-            background-color: rgba(255, 255, 255, 0.8) !important;
-            border: 1px solid rgba(15, 23, 42, 0.08) !important;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.03) !important;
-            color: #0f172a !important;
-        }
-
-        h1, h2, h3, h4, h5, h6, p, span, li, label {
-            color: #0f172a !important;
-        }
-
-        code {
-            background-color: #f1f5f9 !important;
-            color: #0f172a !important;
-        }
-
-        /* Fix selectbox dropdown options for Light Mode */
-        div[data-baseweb="popover"],
-        div[data-baseweb="popover"] *,
-        div[role="listbox"],
-        div[role="listbox"] *,
-        ul[role="listbox"],
-        ul[role="listbox"] * {
-            background-color: #ffffff !important;
-            color: #0f172a !important;
-        }
-        div[role="option"]:hover,
-        li[role="option"]:hover,
-        div[data-baseweb="popover"] li:hover,
-        div[data-baseweb="popover"] div[role="option"]:hover {
-            background-color: #f1f5f9 !important;
-            color: #0f172a !important;
-        }
-
-        /* Fix Password Show/Hide button for Light Mode */
-        div[data-baseweb="input"] button,
-        div[data-baseweb="input"] button:focus,
-        div[data-baseweb="input"] button:active,
-        div[data-testid="stTextInput"] button,
-        div[data-testid="stTextInput"] button:focus,
-        div[data-testid="stTextInput"] button:active {
-            background-color: transparent !important;
-            color: #0f172a !important;
-            border: none !important;
-            box-shadow: none !important;
-        }
-        div[data-baseweb="input"] button:hover,
-        div[data-testid="stTextInput"] button:hover {
-            background-color: rgba(15, 23, 42, 0.08) !important;
-        }
-        """
+        bg_gradient = "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)"
+        sidebar_bg = "rgba(241, 245, 249, 0.9)"
+        sidebar_border = "rgba(15, 23, 42, 0.08)"
+        text_color = "#0f172a"
+        primary_color = "#4f46e5"
+        border_color = "rgba(15, 23, 42, 0.15)"
+        form_element_bg = "#ffffff"
+        number_btn_bg = "#e2e8f0"
+        number_btn_hover = "#cbd5e1"
+        checkbox_border = "rgba(15, 23, 42, 0.3)"
+        expander_summary_bg = "#f1f5f9"
+        column_bg = "rgba(255, 255, 255, 0.8)"
+        code_bg = "#f1f5f9"
+        popover_bg = "#ffffff"
+        popover_hover = "#f1f5f9"
+        password_hover = "rgba(15, 23, 42, 0.08)"
     else:
-        theme_css = """
-        :root {
-            --background-color: #0b0f19 !important;
-            --secondary-background-color: #111827 !important;
-            --text-color: #f3f4f6 !important;
-            --primary-color: #6366f1 !important;
-            --st-border-color: rgba(255, 255, 255, 0.08) !important;
-        }
-        
-        /* Dark mode adjustments */
-        [data-testid="stApp"] {
-            background: linear-gradient(135deg, #0b0f19 0%, #1f2937 100%) !important;
-            color: #f3f4f6 !important;
-        }
-        
-        section[data-testid="stSidebar"] {
-            background-color: rgba(17, 24, 39, 0.9) !important;
-            border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
-        }
-        
-        section[data-testid="stSidebar"] .stMarkdown, section[data-testid="stSidebar"] label, section[data-testid="stSidebar"] span, section[data-testid="stSidebar"] p {
-            color: #f3f4f6 !important;
-        }
-        
-        /* Make form elements legible in Dark Mode */
-        textarea, 
-        input, 
-        select, 
-        div[data-baseweb="select"], 
-        div[data-baseweb="select"] > div,
-        div[data-baseweb="input"] > div,
-        div[data-baseweb="textarea"] > div,
-        .st-d1,
-        .st-d0,
-        .st-d2,
-        .st-d3,
-        .st-c9,
-        .st-c8,
-        .st-c7,
-        div[data-baseweb="select"] ul {
-            background-color: #111827 !important;
-            color: #f3f4f6 !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        }
-        
-        div[data-testid="stExpander"] {
-            background-color: #111827 !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        }
-        
-        div[data-testid="column"] {
-            background-color: rgba(17, 24, 39, 0.8) !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2) !important;
-            color: #f3f4f6 !important;
-        }
+        bg_gradient = "linear-gradient(135deg, #0b0f19 0%, #1f2937 100%)"
+        sidebar_bg = "rgba(17, 24, 39, 0.9)"
+        sidebar_border = "rgba(255, 255, 255, 0.08)"
+        text_color = "#f3f4f6"
+        primary_color = "#6366f1"
+        border_color = "rgba(255, 255, 255, 0.15)"
+        form_element_bg = "#111827"
+        number_btn_bg = "#1f2937"
+        number_btn_hover = "#374151"
+        checkbox_border = "rgba(255, 255, 255, 0.3)"
+        expander_summary_bg = "#1f2937"
+        column_bg = "rgba(17, 24, 39, 0.8)"
+        code_bg = "#1f2937"
+        popover_bg = "#111827"
+        popover_hover = "#1f2937"
+        password_hover = "rgba(255, 255, 255, 0.08)"
 
-        h1, h2, h3, h4, h5, h6, p, span, li, label {
-            color: #f3f4f6 !important;
-        }
-        
-        code {
-            background-color: #1f2937 !important;
-            color: #f3f4f6 !important;
-        }
-
-        /* Fix selectbox dropdown options for Dark Mode */
-        div[data-baseweb="popover"],
-        div[data-baseweb="popover"] *,
-        div[role="listbox"],
-        div[role="listbox"] *,
-        ul[role="listbox"],
-        ul[role="listbox"] * {
-            background-color: #111827 !important;
-            color: #f3f4f6 !important;
-        }
-        div[role="option"]:hover,
-        li[role="option"]:hover,
-        div[data-baseweb="popover"] li:hover,
-        div[data-baseweb="popover"] div[role="option"]:hover {
-            background-color: #1f2937 !important;
-            color: #f3f4f6 !important;
-        }
-
-        /* Fix Password Show/Hide button for Dark Mode (covering focus/active/state-change states) */
-        div[data-baseweb="input"] button,
-        div[data-baseweb="input"] button:focus,
-        div[data-baseweb="input"] button:active,
-        div[data-testid="stTextInput"] button,
-        div[data-testid="stTextInput"] button:focus,
-        div[data-testid="stTextInput"] button:active {
-            background-color: transparent !important;
-            color: #f3f4f6 !important;
-            border: none !important;
-            box-shadow: none !important;
-        }
-        div[data-baseweb="input"] button:hover,
-        div[data-testid="stTextInput"] button:hover {
-            background-color: rgba(255, 255, 255, 0.08) !important;
-        }
-        """
-
-    st.markdown(f"<style>{theme_css}</style>", unsafe_allow_html=True)
-
-    # Inject custom modern CSS styles for premium styling and design aesthetics
-    st.markdown("""
+    # Single unified CSS template using Python string formatting
+    st.markdown(f"""
         <style>
         /* Modern font and styling imports */
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
-        
+
+        /* Root Variables */
+        :root {{
+            --background-color: {form_element_bg} !important;
+            --text-color: {text_color} !important;
+            --primary-color: {primary_color} !important;
+            --st-border-color: {border_color} !important;
+        }}
+
         /* Apply custom font to text-bearing elements only, preserving icon fonts */
         html, body, [class*="css"],
         h1, h2, h3, h4, h5, h6, p, li, label,
@@ -646,75 +434,195 @@ def main() -> None:
         div[data-baseweb="select"],
         div[data-testid="stMarkdownContainer"],
         .stMarkdown, .stTextInput, .stTextArea, .stSelectbox,
-        .stSlider, .stNumberInput, .stCheckbox {
+        .stSlider, .stNumberInput, .stCheckbox {{
             font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol", "Apple Color Emoji", "Noto Color Emoji", sans-serif !important;
-        }
+        }}
 
         /* Apply font to span elements EXCEPT Material Icons used by Streamlit for icons */
-        span:not([class*="material"]):not([data-icon]) {
+        span:not([class*="material"]):not([data-icon]):not([data-testid="stIconMaterial"]):not(.ed4y4ls0):not(.e1nzilvr5) {{
             font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol", "Apple Color Emoji", "Noto Color Emoji", sans-serif !important;
-        }
+        }}
 
         /* Protect Material Icons / Material Symbols font from being overridden */
         [class*="material-symbols"],
         [class*="material-icons"],
-        .e1nzilvr5 {
+        [data-testid="stIconMaterial"],
+        .ed4y4ls0,
+        .e1nzilvr5 {{
             font-family: 'Material Symbols Rounded', 'Material Icons', sans-serif !important;
-        }
-        
-        /* Maintain monospace for code elements */
-        code, pre, kbd, samp {
-            font-family: monospace, Courier, "Courier New" !important;
-        }
-        
-        /* Hide Header entirely to save space */
-        header, [data-testid="stHeader"], .stAppHeader {
+        }}
+
+        /* Global layout and background adjustments */
+        [data-testid="stApp"], .stApp {{
+            background: {bg_gradient} !important;
+            color: {text_color} !important;
+        }}
+
+        section[data-testid="stSidebar"] {{
+            background-color: {sidebar_bg} !important;
+            border-right: 1px solid {sidebar_border} !important;
+        }}
+
+        section[data-testid="stSidebar"] .stMarkdown, 
+        section[data-testid="stSidebar"] label, 
+        section[data-testid="stSidebar"] span, 
+        section[data-testid="stSidebar"] p {{
+            color: {text_color} !important;
+        }}
+
+        /* Make form elements legible and adapt to themes */
+        textarea, 
+        input, 
+        select, 
+        div[data-baseweb="select"], 
+        div[data-baseweb="select"] > div,
+        div[data-baseweb="input"] > div,
+        div[data-baseweb="textarea"] > div,
+        .st-d1, .st-d0, .st-d2, .st-d3, .st-c9, .st-c8, .st-c7,
+        div[data-baseweb="select"] ul {{
+            background-color: {form_element_bg} !important;
+            color: {text_color} !important;
+            border: 1px solid {border_color} !important;
+        }}
+
+        /* Selectbox child div overrides to fix the .st-d1 and emotion cache background issue */
+        div[data-baseweb="select"] div,
+        div[data-baseweb="input"] div,
+        div[data-baseweb="textarea"] div {{
+            background-color: {form_element_bg} !important;
+            color: {text_color} !important;
+        }}
+
+        /* Ensure all text under sliders is readable */
+        .stSlider p, .stSlider span, .stSlider div {{
+            color: {text_color} !important;
+        }}
+
+        /* Number input +/- buttons styling */
+        div[data-testid="stNumberInput"] button,
+        div[data-baseweb="input"] button[kind="minimal"] {{
+            background-color: {number_btn_bg} !important;
+            color: {text_color} !important;
+            border: 1px solid {border_color} !important;
+        }}
+        div[data-testid="stNumberInput"] button:hover {{
+            background-color: {number_btn_hover} !important;
+        }}
+
+        /* Checkbox styling */
+        div[data-testid="stCheckbox"] label span[data-testid="stCheckbox-label"] {{
+            color: {text_color} !important;
+        }}
+        div[role="checkbox"],
+        div[data-baseweb="checkbox"] div {{
+            border-color: {checkbox_border} !important;
+        }}
+
+        /* Expander customization */
+        div[data-testid="stExpander"] {{
+            background-color: {form_element_bg} !important;
+            border: 1px solid {border_color} !important;
+            border-radius: 12px !important;
+            margin-top: 15px;
+        }}
+        div[data-testid="stExpander"] summary {{
+            background-color: {expander_summary_bg} !important;
+            color: {text_color} !important;
+        }}
+        div[data-testid="stExpander"] summary * {{
+            background-color: transparent !important;
+            color: {text_color} !important;
+            fill: {text_color} !important;
+        }}
+        div[data-testid="stExpander"] summary svg {{
+            fill: {text_color} !important;
+            stroke: {text_color} !important;
+        }}
+        div[data-testid="stExpander"] > details > div {{
+            background-color: {form_element_bg} !important;
+        }}
+        div[data-testid="stExpander"] [class*="st-"] {{
+            background-color: transparent !important;
+        }}
+
+        /* Column containers */
+        div[data-testid="column"] {{
+            background-color: {column_bg} !important;
+            border: 1px solid {border_color} !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05) !important;
+            color: {text_color} !important;
+            backdrop-filter: blur(10px);
+            padding: 25px !important;
+            border-radius: 16px !important;
+            margin-bottom: 20px;
+        }}
+
+        h1, h2, h3, h4, h5, h6, p, span, li, label {{
+            color: {text_color} !important;
+        }}
+
+        code {{
+            background-color: {code_bg} !important;
+            color: {text_color} !important;
+        }}
+
+        /* Fix selectbox dropdown popover options */
+        div[data-baseweb="popover"],
+        div[data-baseweb="popover"] *,
+        div[role="listbox"],
+        div[role="listbox"] *,
+        ul[role="listbox"],
+        ul[role="listbox"] * {{
+            background-color: {popover_bg} !important;
+            color: {text_color} !important;
+        }}
+        div[role="option"]:hover,
+        li[role="option"]:hover,
+        div[data-baseweb="popover"] li:hover,
+        div[data-baseweb="popover"] div[role="option"]:hover {{
+            background-color: {popover_hover} !important;
+            color: {text_color} !important;
+        }}
+
+        /* Password Show/Hide button */
+        div[data-baseweb="input"] button,
+        div[data-baseweb="input"] button:focus,
+        div[data-baseweb="input"] button:active,
+        div[data-testid="stTextInput"] button,
+        div[data-testid="stTextInput"] button:focus,
+        div[data-testid="stTextInput"] button:active {{
+            background-color: transparent !important;
+            color: {text_color} !important;
+            border: none !important;
+            box-shadow: none !important;
+        }}
+        div[data-baseweb="input"] button:hover,
+        div[data-testid="stTextInput"] button:hover {{
+            background-color: {password_hover} !important;
+        }}
+
+        /* Other premium CSS adjustments */
+        header, [data-testid="stHeader"], .stAppHeader {{
             display: none !important;
-            height: 0px !important;
-            min-height: 0px !important;
-            padding: 0 !important;
-        }
-        
-        /* Disable/hide all sidebar collapse and expansion controls to keep sidebar permanently open */
+        }}
         [data-testid="collapsedControl"],
         [data-testid="stSidebarCollapseButton"],
         .stSidebarCollapseButton,
         section[data-testid="stSidebar"] button[aria-label="Close sidebar"],
-        section[data-testid="stSidebar"] button[aria-label="Close"] {
+        section[data-testid="stSidebar"] button[aria-label="Close"] {{
             display: none !important;
             visibility: hidden !important;
-        }
-        
-        /* Adjust page top padding for tight alignment */
-        .block-container {
+        }}
+        .block-container {{
             padding-top: 1.5rem !important;
             padding-bottom: 2rem !important;
-        }
-        
-        /* Hide Deploy button and Toolbar in top right */
-        .stAppDeployButton, .stDeployButton, .stAppToolbar, [data-testid="stAppToolbar"], #MainMenu {
+        }}
+        .stAppDeployButton, .stDeployButton, .stAppToolbar, [data-testid="stAppToolbar"], #MainMenu {{
             display: none !important;
-        }
-        
-        /* Main background using Streamlit variables for Dark/Light responsiveness */
-        .stApp {
-            background: linear-gradient(135deg, var(--background-color) 0%, var(--secondary-background-color) 100%);
-            color: var(--text-color);
-        }
-        
-        /* Glassmorphism sidebar styling */
-        section[data-testid="stSidebar"] {
-            background-color: var(--secondary-background-color) !important;
-            backdrop-filter: blur(15px);
-            border-right: 1px solid var(--st-border-color, rgba(128, 128, 128, 0.2));
-        }
-        
-        section[data-testid="stSidebar"] .stMarkdown, section[data-testid="stSidebar"] label, section[data-testid="stSidebar"] span {
-            color: var(--text-color) !important;
-        }
-        
+        }}
+
         /* Title styling with glowing indigo/pink gradient */
-        h1 {
+        h1 {{
             background: linear-gradient(90deg, #4f46e5, #ec4899);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -723,46 +631,33 @@ def main() -> None:
             font-size: 3rem !important;
             margin-bottom: 5px !important;
             text-align: center;
-        }
+        }}
         
-        .title-caption {
-            color: var(--text-color);
+        .title-caption {{
+            color: {text_color};
             opacity: 0.8;
             font-size: 1.1rem;
             text-align: center;
             margin-bottom: 30px;
-        }
-        
-        /* Glassmorphic Column Containers */
-        div[data-testid="column"] {
-            background-color: var(--secondary-background-color) !important;
-            backdrop-filter: blur(10px);
-            padding: 25px !important;
-            border-radius: 16px !important;
-            border: 1px solid var(--st-border-color, rgba(128, 128, 128, 0.2)) !important;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
-            color: var(--text-color) !important;
-        }
-        
+        }}
+
         /* Subheader and Labels */
-        h3 {
-            color: var(--primary-color, #4f46e5) !important;
+        h3 {{
+            color: {primary_color} !important;
             font-weight: 600 !important;
             font-size: 1.4rem !important;
-            border-bottom: 1px solid var(--st-border-color, rgba(128, 128, 128, 0.2));
+            border-bottom: 1px solid {border_color};
             padding-bottom: 10px;
             margin-bottom: 20px !important;
-        }
+        }}
         
-        label, p, span, li {
-            color: var(--text-color) !important;
+        label, p, span, li {{
             font-weight: 500;
-        }
-        
+        }}
+
         /* Primary button styling with micro-animations and orange-to-green gradient */
         div.stButton > button:first-child,
-        .stBaseButton-primary {
+        .stBaseButton-primary {{
             background: linear-gradient(90deg, #ff781e 0%, #22c55e 100%) !important;
             color: white !important;
             border: none !important;
@@ -774,47 +669,25 @@ def main() -> None:
             margin-top: 10px;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
             box-shadow: 0 4px 15px rgba(255, 120, 30, 0.25) !important;
-        }
+        }}
         
         div.stButton > button:first-child:hover,
-        .stBaseButton-primary:hover {
+        .stBaseButton-primary:hover {{
             transform: translateY(-2px) scale(1.01) !important;
             box-shadow: 0 6px 22px rgba(255, 120, 30, 0.4) !important;
             background: linear-gradient(90deg, #ff781e 0%, #22c55e 100%) !important;
             color: white !important;
-        }
+        }}
         
         div.stButton > button:first-child:active,
-        .stBaseButton-primary:active {
+        .stBaseButton-primary:active {{
             transform: translateY(1px) !important;
-        }
+        }}
         
-        /* Styling text areas and inputs */
-        textarea, input, select, div[data-baseweb="select"] {
-            border-radius: 10px !important;
-            background-color: var(--background-color) !important;
-            border: 1px solid var(--st-border-color, rgba(128, 128, 128, 0.2)) !important;
-            color: var(--text-color) !important;
-        }
-        
-        textarea:focus, input:focus {
-            border-color: var(--primary-color, #4f46e5) !important;
+        textarea:focus, input:focus {{
+            border-color: {primary_color} !important;
             box-shadow: 0 0 12px rgba(79, 70, 229, 0.15) !important;
-        }
-        
-        /* Expander customization */
-        div[data-testid="stExpander"] {
-            background-color: var(--secondary-background-color) !important;
-            border: 1px solid var(--st-border-color, rgba(128, 128, 128, 0.2)) !important;
-            border-radius: 12px !important;
-            margin-top: 15px;
-        }
-        
-        /* Code block readability */
-        code {
-            background-color: var(--secondary-background-color) !important;
-            color: var(--text-color) !important;
-        }
+        }}
         </style>
     """, unsafe_allow_html=True)
 
