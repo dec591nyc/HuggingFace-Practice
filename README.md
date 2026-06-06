@@ -2,7 +2,7 @@
 
 這是基於 Streamlit 建立的現代化 AI 繪圖網頁應用程式，專注於提供簡潔、穩定且直覺的操作體驗。
 
-🔗 **線上展示 (Live Demo)**: [https://huggingface-practice-dec591nyc.streamlit.app](https://huggingface-practice-dec591nyc.streamlit.app)
+🔗 [**Live Demo**](https://huggingface-practice-dec591nyc.streamlit.app)
 
 ---
 
