@@ -52,6 +52,7 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "aspect_ratio_label": "Canvas Aspect Ratio",
         "advanced_params": "Advanced Parameters",
         "neg_prompt_label": "Negative Prompt",
+        "neg_prompt_default": "blurry, low quality, distorted, watermark, text artifacts, bad anatomy",
         "seed_label": "Inference Seed",
         "batch_count_label": "Batch Count (Images)",
         "cfg_label": "Guidance Scale (CFG)",
@@ -99,7 +100,8 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "style_label": "藝術風格套用 (Style)",
         "aspect_ratio_label": "畫布比例 (Aspect Ratio)",
         "advanced_params": "進階參數設定",
-        "neg_prompt_label": "負向提示詞 (Negative Prompt)",
+        "neg_prompt_label": "負向提示詞",
+        "neg_prompt_default": "模糊、低畫質、變形、浮水印、文字殘影、肢體畸形",
         "seed_label": "隨機種子 (Seed)",
         "batch_count_label": "生成張數 (Batch Count)",
         "cfg_label": "提示詞引導係數 (CFG)",
@@ -886,8 +888,9 @@ def main() -> None:
         with st.expander(t["advanced_params"], expanded=False):
             negative_prompt = st.text_area(
                 t["neg_prompt_label"],
-                value="blurry, low quality, distorted, watermark, text artifacts, bad anatomy",
+                value=t["neg_prompt_default"],
                 height=70,
+                key=f"negative_prompt_widget_{lang}"
             )
             seed = st.number_input(t["seed_label"], min_value=0, max_value=2_147_483_647, value=42, step=1)
             number_of_images = st.slider(t["batch_count_label"], min_value=1, max_value=4, value=1)
